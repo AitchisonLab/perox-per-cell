@@ -1,8 +1,0 @@
-/zproject_get_perox_masks.spec
-/BuildingEXEfiles.txt
-/get_cell_masks_and_count.spec
-/perox_per_cell.sh
-build
-dist
-logs
-releases
