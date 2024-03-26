@@ -13,22 +13,24 @@ The program first generates intensity projections for both channels. Working fro
 The program requires that you have Java installed on your machine.
 If you need to install it, go to https://www.java.com/download/ie_manual.jsp
 
-The environment variable JAVA_HOME or CP_JAVA_HOME must also be set and must point to a valid java installation so that the bioformats package can use java to load in the raw image file.
+The environment variable JAVA_HOME or CP_JAVA_HOME must also be set and must point to a valid java installation so that the bioformats package can use Java to load in the raw image file.
 
 ## RUNNING THE PROGRAM
 Currently, the program processes one input file at a time. Please keep all program files where they are in the perox-per-cell directory. Otherwise, the program will likely fail to run.
 
 ### On Windows
-1) Download one of the perox-per-cell Windows executable ZIPs under "Releases"
-2) Extract files in the downloaded ZIP
-3) Open the extracted perox_per_cell.bat file in a text editor and edit line 4 to provide the full path to the input file you wish to process.
-4) Set the `POdotcut` and `POminarea` parameters in the .bat file. The former controls the peroxisome detection sensitivity (lower is more sensitive) and the latter sets the minimum size threshold for peroxisomes (in pixels).
-5) Save the edited perox_per_cell.bat file, then double-click it to run the program. 
-6) A command prompt window will appear and show messages output by the program. When the program finishes, this window will close automatically. In initial tests, the program takes about 90 seconds to complete on a garden variety Windows desktop.
+1) Download and extract one of the perox-per-cell Windows executable package ZIPs under [Releases](https://github.com/AitchisonLab/perox-per-cell/releases).
+2) Open the extracted perox_per_cell.bat file in a text editor and edit line 4 to provide the full path to the input file you wish to process.
+3) Set the `POdotcut` and `POminarea` parameters in the .bat file. The former controls the peroxisome detection sensitivity (lower is more sensitive) and the latter sets the minimum size threshold for peroxisomes (in pixels).
+4) Save the edited perox_per_cell.bat file, then double-click it to run the program. 
+5) A command prompt window will appear and show messages output by the program. When the program finishes, this window will close automatically. In initial tests, the program takes about 90 seconds to complete on a garden variety Windows desktop.
 To keep the window containing the output messages from the program open after the program ends, you can also run the program from the command line by opening a command prompt, `cd`'ing to the directory containing the perox_per_cell.bat file and entering the command
 `perox_per_cell.bat`
 
 ### On Mac OS X
+_(TBA)_
+
+### On Linux
 _(TBA)_
 
 ## OUTPUT
