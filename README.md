@@ -2,6 +2,20 @@
 Automated quantification of peroxisome characteristics in yeast cells based on fluorescence microscopy images
 
 
+#### Table of Contents
+
+- [SCOPE](#scope)
+ - [PREREQUISITES](#prerequisites)
+ - [RUNNING THE PROGRAM](#running-the-program)
+   - [On Windows](#on-windows)
+   - [On Mac OS X](#on-mac-os-x)
+   - [On Linux](#on-linux)
+ - [OUTPUT](#output)
+ - [CONTACT](#contact)
+ - [ATTRIBUTION](#attribution)
+   - [Allen Institute Cell & Structure Segmenter](#allen-institute-cell--structure-segmenter)
+   - [YeastSpotter](#yeastspotter)
+
 
 ## SCOPE
 This program processes microscopy files to quantify the number of peroxisomes per yeast cell, cell and peroxisome areas, cytosolic peroxisomal signal intensities, as well as other features.
@@ -56,7 +70,7 @@ Seattle Children's Research Institute
 Copyright &copy; 2023-2024
 
 ## ATTRIBUTION
-### perox-per-cell uses the Allen Institute Cell & Structure Segmenter
+### Allen Institute Cell & Structure Segmenter
 Allen Institute Software License – This software license is the 2-clause BSD
 license plus a third clause that prohibits redistribution and use for
 commercial purposes without further permission.
@@ -92,7 +106,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-### perox-per-cell uses YeastSpotter
+### YeastSpotter
 
 YeastSpotter Mask R-CNN copyright &copy; 2017 Matterport, Inc.
 
