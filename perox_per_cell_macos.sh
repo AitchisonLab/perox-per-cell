@@ -5,6 +5,8 @@ POdotcut=0.0064
 POminarea=1
 POmaxintensity=16383
 
+echo "Running perox-per-cell..."
+
 # Set output directory for z-projections
 zprojdircells="$file""_Zprojections/cells/"
 zprojmasksdir="$file""_ZprojectionMasks/"

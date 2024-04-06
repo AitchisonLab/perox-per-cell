@@ -12,6 +12,7 @@ dependencies:
   - openssl=1.1.1w=hca72f7f_0
   - pip=23.3.1=py310hecd8cb5_0
   - python=3.10.0=hdfd78df_5
+  - python-javabridge=4.0.3
   - readline=8.2=hca72f7f_0
   - setuptools=68.2.2=py310hecd8cb5_0
   - sqlite=3.41.2=h6c40b1e_0
@@ -154,7 +155,6 @@ dependencies:
     - pyproject-hooks==1.0.0
     - python-bioformats==4.0.7
     - python-dateutil==2.9.0.post0
-    - python-javabridge==4.0.3
     - pytz==2024.1
     - pywavelets==1.5.0
     - pyyaml==6.0.1
