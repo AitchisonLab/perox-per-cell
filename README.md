@@ -53,7 +53,7 @@ Most of this will be done using commands entered in the Terminal app. Open it by
 
 1) Download perox-per-cell repository files (via `git clone https://github.com/AitchisonLab/perox-per-cell.git`, etc.) and the yeast segmentation weights file
 
-  Please see instructions [here](https://github.com/alexxijielu/yeast_segmentation?tab=readme-ov-file#downloading-the-weights) for directions on downloading the yeast segmentation weights file. After downloading, place the file in the "weights" folder in the perox-per-cell repository.
+   Please see instructions [here](https://github.com/alexxijielu/yeast_segmentation?tab=readme-ov-file#downloading-the-weights) for directions on downloading the yeast segmentation weights file. After downloading, place the file in the "weights" folder in the perox-per-cell repository.
 
 2) Ensure that Java is installed on your system and that the environment variable `JAVA_HOME` is set and points to a valid Java installation. You can check whether Java is installed by entering the command `java -version` in a terminal. If no version information is shown, Java is probably not installed. Download instructions are [here](https://www.java.com/en/download/apple.jsp)
    
