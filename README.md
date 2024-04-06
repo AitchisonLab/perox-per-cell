@@ -48,14 +48,19 @@ To keep the window containing the output messages from the program open after th
 `perox_per_cell.bat`
 
 ### On Mac OS X
-Currently, a standalone executable for Mac OS X is not available. Installing the tool on Mac OS X requires some additional work to set up two conda environments that are then used to execute python files in the perox-per-cell repository.
+Currently, a standalone executable for Mac OS X is not available. Installing the tool on Mac OS X requires setting up two conda environments that are then used to execute python files in the perox-per-cell repository.
+
+The software has not been extensively tested on Mac but the instructions below work for installation on an M1 Silicon machine running OS X 13.6.1, Java JDK 16.0.2 and conda 24.1.2.
+
+We welcome feedback from the community to improve the software's performance on non-Windows machines.
+
 Most of this will be done using commands entered in the Terminal app. Open it by going to _Applications > Utilities > Terminal_
 
 1) Download perox-per-cell repository (via `git clone https://github.com/AitchisonLab/perox-per-cell.git`, etc.) and the yeast segmentation weights file
 
-   The yeast segmentation weights file (~230 MB) is available [here](https://github.com/alexxijielu/yeast_segmentation?tab=readme-ov-file#downloading-the-weights). After downloading, place the file in the "weights" folder in the perox-per-cell directory.
+   The yeast segmentation weights file (~230 MB) is available [here](https://zenodo.org/record/3598690/files/weights.zip). After downloading, place the file in the "weights" folder in the perox-per-cell directory.
 
-2) Ensure that Java is installed on your system and that the environment variable `JAVA_HOME` is set and points to a valid Java installation. You can check whether Java is installed by entering the command `java -version` in a terminal. If no version information is shown, Java is probably not installed. Download instructions are [here](https://www.java.com/en/download/apple.jsp)
+2) Ensure that Java is installed on your system and that the environment variable `JAVA_HOME` is set and points to a valid Java installation. You can check whether Java is installed by entering the command `java -version` in a terminal. If no version information is shown, Java is probably not installed. Download instructions are [here](https://www.java.com/en/download/apple.jsp).
    
     If Java is installed, you can set the `JAVA_HOME` environment variable for zsh (the default Mac OS shell) by entering the command
    
