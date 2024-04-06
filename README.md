@@ -58,7 +58,7 @@ Most of this will be done using commands entered in the Terminal app. Open it by
 
 1) Download perox-per-cell repository (via `git clone https://github.com/AitchisonLab/perox-per-cell.git`, etc.) and the yeast segmentation weights file
 
-   The yeast segmentation weights file (~230 MB) is available [here](https://zenodo.org/record/3598690/files/weights.zip). After downloading, place the file in the "weights" folder in the perox-per-cell directory.
+   The yeast segmentation weights file (~230 MB) is available [here](https://zenodo.org/record/3598690/files/weights.zip). Downnload the file so that it is in the main perox-per-cell directory, then unzip the file using 'unzip weights.zip`. This will unzip a folder called "weights" that contains the RCNN weights file deepretina_final.h5.
 
 2) Ensure that Java is installed on your system and that the environment variable `JAVA_HOME` is set and points to a valid Java installation. You can check whether Java is installed by entering the command `java -version` in a terminal. If no version information is shown, Java is probably not installed. Download instructions are [here](https://www.java.com/en/download/apple.jsp).
    
