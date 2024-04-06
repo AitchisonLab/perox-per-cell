@@ -113,7 +113,9 @@ Most of this will be done using commands entered in the Terminal app. Open it by
     - `POmaxintensity` should be set to one less than the maximum possible pixel intensity value for the input image. In other words, `2^(bit depth of input image) - 1`
     
     In a Terminal, run the perox-per-cell program by `cd`’ing to its location, then entering the command
-    `./perox-per-cell-macos.sh`
+    `./perox_per_cell_macos.sh`
+
+    You may need to adjust the permissions on the file to run it using, e.g., `chmod +x perox_per_cell_macos.sh`
 
 ### On Linux
 Currently, a standalone executable for Linux is not available, and the software has not yet been tested on Linux. However, the instructions above for running on Mac OS X may be helpful. Generally, the process of installing and running perox-per-cell on Linux will be similar.
