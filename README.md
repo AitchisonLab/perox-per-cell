@@ -88,7 +88,7 @@ Most of this will be done using commands entered in the Terminal app. Open it by
     
     `cd [path to downloaded repository]`
     
-    Next, enter one of the following commands in a terminal to create the conda environment for peroxisome segmentation
+    Next, enter one of the following commands in a terminal to create the conda environment for peroxisome segmentation (this may take several minutes to complete because it will install a number of pip dependencies) 
 
     - For users with M1 Silicon processors (arm64 architecture): `CONDA_SUBDIR=osx-64 conda env create -f mac_environment_pseg.yml`
 
