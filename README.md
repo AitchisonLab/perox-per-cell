@@ -35,6 +35,8 @@ If you need help setting the environment variable, [this page](https://www.wikih
 ## RUNNING THE PROGRAM
 Currently, the program processes one input file at a time. Mac and Linux users: Please keep all program files where they are in the downloaded repository. Otherwise, the program will likely fail to run.
 
+An example input imaging file (ZVI format) capturing data from wild-type cells can be downloaded [here](https://drive.google.com/file/d/1wJ4VLxBQHVSehQ41q6cxrtBX_huBt-Bj/view?usp=sharing). 
+
 ### On Windows
 1) Download and extract one of the perox-per-cell Windows executable package ZIPs under [Releases](https://github.com/AitchisonLab/perox-per-cell/releases).
 2) Open the extracted perox_per_cell.bat file in a text editor and edit line 4 to provide the full path to the input imaging file you wish to process.
