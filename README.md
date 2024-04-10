@@ -19,11 +19,11 @@ Automated quantification of peroxisome characteristics in yeast cells based on f
 
 ## SCOPE
 This program processes microscopy files to quantify the number of peroxisomes per yeast cell, cell and peroxisome areas, cytosolic peroxisomal signal intensities, as well as other features.
-It expects the input file to include two channels: the first should contain fluoresence microscopy images of GFP-tagged peroxisomal markers in a Z-stack, the second channel should contain fluorescence images of the same Z-stack but captures whole cells stained with calcofluor white. 
+It expects the input file to include two channels: the first should contain fluoresence microscopy images of GFP-tagged peroxisomal markers in a Z-stack, the second channel should contain fluorescence images of the same Z-stack but capturing whole cells stained with calcofluor white. 
 
 While the software has primarily been tested using Zeiss Vision Image (.zvi) files, other imaging foramts such as TIFF files can also be used. Furthermore, Z-stacks are not required: 2D images can also be used for both channels. 
 
-The program first generates intensity projections for both channels. Working from the resulting 2D images, the program then segments the peroxisomes using the Allen Cell and Structure Segmenter (https://www.allencell.org/segmenter.html) and then segments whole cells using a neural network-based method called YeastSpotter (https://github.com/alexxijielu/yeast_segmentation). For each individual cell identified in the latter step, the program determines the number of unique peroxisome objects contained within that cell's boundary using output from the former step. It also computes the cell's physical area based on pixel resolution in the input file metadata as well as the total cytosolic (i.e., non-peroxisomal) signal present in the GFP channel. The program uses data from the maximal intensity projection of the GFP channel to quantify the latter signal. The program excludes cells that lie on the image border.
+The program first generates intensity projections for both channels. Working from the resulting 2D images, the program then segments the peroxisomes using the [Allen Cell and Structure Segmenter](https://www.allencell.org/segmenter.html) and then segments whole cells using a neural network-based method called [YeastSpotter](https://github.com/alexxijielu/yeast_segmentation). For each individual cell identified in the latter step, the program determines the number of unique peroxisome objects contained within that cell's boundary using output from the former step. It also computes the cell's physical area based on pixel resolution in the input file metadata as well as the total cytosolic (i.e., non-peroxisomal) signal present in the GFP channel. The program uses data from the maximal intensity projection of the GFP channel to quantify the latter signal. The program excludes cells that lie on the image border.
 
 ## PREREQUISITES
 The program requires that you have Java installed on your machine.
@@ -60,7 +60,7 @@ Most of this will be done using commands entered in the Terminal app. Open it by
 
 1) Download perox-per-cell repository (via `git clone https://github.com/AitchisonLab/perox-per-cell.git`, etc.) and the yeast segmentation weights file
 
-   The yeast segmentation weights file (~230 MB) is available [here](https://zenodo.org/record/3598690/files/weights.zip). Downnload the file so that it is in the main perox-per-cell directory, then unzip the file using 'unzip weights.zip`. This will unzip a folder called "weights" that contains the RCNN weights file deepretina_final.h5.
+   The yeast segmentation weights file (~230 MB) is available [here](https://zenodo.org/record/3598690/files/weights.zip). Download the file so that it is in the main perox-per-cell directory, then unzip the file using 'unzip weights.zip`. This will unzip a folder called "weights" that contains the RCNN weights file deepretina_final.h5.
 
 2) Ensure that Java is installed on your system and that the environment variable `JAVA_HOME` is set and points to a valid Java installation. You can check whether Java is installed by entering the command `java -version` in a terminal. If no version information is shown, Java is probably not installed. Download instructions are [here](https://www.java.com/en/download/apple.jsp).
    
@@ -117,10 +117,24 @@ Most of this will be done using commands entered in the Terminal app. Open it by
     In a Terminal, run the perox-per-cell program by `cd`’ing to its location, then entering the command
     `./perox_per_cell_macos.sh`
 
-    You may need to adjust the permissions on the file to run it using, e.g., `chmod +x perox_per_cell_macos.sh`
+    You may need to adjust the permissions on the file to make it executable, e.g., `chmod +x perox_per_cell_macos.sh`
 
 ### On Linux
-Currently, a standalone executable for Linux is not available, and the software has not yet been tested on Linux. However, the instructions above for running on Mac OS X may be helpful. Generally, the process of installing and running perox-per-cell on Linux will be similar.
+Currently, a standalone executable for Linux is not available, but the software has been successfully tested on a Windows Subsystem for Linux (WSL v1) running Ubuntu 22.04 using the instructions below. These instructions are generally similar to the installation/execution steps for Mac OS X (above). To summarize:
+
+1) Download the perox-per-cell repository and the [RCNN weights file](https://zenodo.org/record/3598690/files/weights.zip)
+2) Ensure Java is installed and the JAVA_HOME environment variable is set
+3) Ensure that conda is installed
+4) Use the YAML files in the perox-per-cell repository to create the two conda environments needed for segmenting peroxisomes and cells. Use the Linux-specific YAML files:
+   - Enter this command to create the environment for segmenting peroxisomes: `conda env create -f linux_environment_pseg.yml`
+   - Enter this command to create the environment for segmenting cells: `conda env create -f linux_environment_cseg.yml`
+5) Edit the `perox_per_cell_linux.sh` file to ensure conda is sourced correctly on execution (see Mac OS X instructions for more details)
+6) Edit the location of the imaging file to process in the `perox_per_cell_linux.sh` file and adjust other parameters as needed, then execute that file.
+
+More details on each of these steps can be found in the Mac OS X installation/execution instructions above.
+
+[An example input imaging file (ZVI format) capturing data from wild-type cells can be downloaded here](https://drive.google.com/file/d/1wJ4VLxBQHVSehQ41q6cxrtBX_huBt-Bj/view?usp=sharing).
+
 
 ## OUTPUT
 The program outputs an Excel spreadsheet in the same directory as the input imaging file. The spreadsheet contains three worksheets:
