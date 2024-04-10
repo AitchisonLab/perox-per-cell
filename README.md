@@ -45,7 +45,7 @@ Currently, the program processes one input file at a time. Mac and Linux users: 
     - `POminarea` sets the minimum size, in pixels, for a peroxisome to be counted
     - `POmaxintensity` should be set to one less than the maximum possible pixel intensity value for the input image. In other words, 2^(bit depth of input image) - 1
 5) Save the edited perox_per_cell.bat file, then double-click it to execute the program. 
-6) A command prompt window will appear and show messages output by the program. You may see many Java-related messages that can be ignored. When the program finishes, the window will close automatically. In initial tests, the program takes about 90 seconds to complete on a garden variety Windows desktop.
+6) A command prompt window will appear and show messages output by the program. You may see many Java-related messages that can be ignored. When the program finishes, the window will close automatically. In initial tests, the program takes less than 90 seconds to complete on a garden variety Windows desktop.
 To keep the window containing the output messages from the program open after the program ends, you can also run the program from the command line by opening a command prompt, `cd`'ing to the directory containing the perox_per_cell.bat file and entering the command
 `perox_per_cell.bat`
 
@@ -72,7 +72,7 @@ Most of this will be done using commands entered in the Terminal app. Open it by
    
     `echo export "JAVA_HOME=\$(/usr/libexec/java_home)" >> ~/.bash_profile`
 
-    In either case, restart your shell after entering the command
+    In either case, restart your shell after entering the command.
    
  3) Next, ensure that conda is installed. Conda is a tool for managing virtual python environments. See [this website](https://docs.conda.io/projects/conda/en/stable/user-guide/install/index.html) for instructions on installing conda. Be sure to download the version that works for your processor (x86_64 or M1 Silicon)
  4) Using conda, set up two virtual python environments - one is used for segmenting peroxisomes, the other for cells.
@@ -120,7 +120,7 @@ Most of this will be done using commands entered in the Terminal app. Open it by
     You may need to adjust the permissions on the file to make it executable, e.g., `chmod +x perox_per_cell_macos.sh`
 
 ### On Linux
-Currently, a standalone executable for Linux is not available, but the software has been successfully tested on a Windows Subsystem for Linux (WSL v1) running Ubuntu 22.04 using the instructions below. These instructions are generally similar to the installation/execution steps for Mac OS X (above). To summarize:
+Currently, a standalone executable for Linux is not available, but the software has been successfully tested on a Windows Subsystem for Linux (WSL v1) running Ubuntu 22.04 using the steps below. These are generally similar to the installation/execution steps for Mac OS X (above). To summarize:
 
 1) Download the perox-per-cell repository and the [RCNN weights file](https://zenodo.org/record/3598690/files/weights.zip)
 2) Ensure Java is installed and the JAVA_HOME environment variable is set
