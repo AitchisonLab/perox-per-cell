@@ -95,8 +95,9 @@ def run_job():
         if os.path.isfile(os.path.join(head, apath)):
             subjobval = run_subjob(apath, dot_3d_cutoff_par, minarea_par, maxintensity_par)
             if not subjobval:
-                filesnotprocessed.append(apath)  # Add path to list of paths we couldn't process (for warning message)
-                print(apath + "Could not be processed")
+                filehead, filetail = os.path.split(apath)
+                filesnotprocessed.append(filetail)  # Add path to list of paths we couldn't process (for warning message)
+                print(apath + " could not be processed")
 
     if len(filesnotprocessed) > 0:  # Report files that couldn't be processed, if we're doing a batch
         badfiles = '\n'.join(filesnotprocessed)
@@ -127,11 +128,9 @@ def run_subjob(path="", dot_3d_cutoff_par=0.0064, minarea_par=1, maxintensity_pa
     print("Maximum possible intensity of image set to ", maxintensity_par)
 
     head, tail = os.path.split(path)
-    print(head)
-    print(tail)
 
-    # Load zvi file
-    print("Loading " + tail)
+    # Load imaging file
+    print("Loading " + path)
 
     # Get image metadata
     try:
@@ -353,7 +352,7 @@ else:
     app.geometry('600x275')
 
 # Create a textfield for inputting the file location
-filetext = tk.Text(app, height=1, width=47)
+filetext = tk.Text(app, height=2, width=47)
 
 # Add button for processing all files in a directory
 processdirvar = tk.IntVar()
