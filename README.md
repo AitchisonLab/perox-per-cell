@@ -30,7 +30,7 @@ The environment variable `JAVA_HOME` or `CP_JAVA_HOME` must also be set and must
 If you need help setting the environment variable, [this page](https://www.wikihow.com/Set-Java-Home) may be helpful.
 
 ## RUNNING THE PROGRAM
-Currently, the program processes one input file at a time. Please keep all program files where they are in the downloaded repository. Otherwise, the program will likely fail to run.
+Please keep all program files where they are in the downloaded repository. Otherwise, the program will likely fail to run.
 
 [An example input imaging file (ZVI format) capturing data from wild-type cells can be downloaded here](https://drive.google.com/file/d/1wJ4VLxBQHVSehQ41q6cxrtBX_huBt-Bj/view?usp=sharing). 
 
