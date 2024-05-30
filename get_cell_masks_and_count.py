@@ -8,6 +8,7 @@ import pandas as pd
 import random
 import json
 import warnings
+import gc
 
 from mrcnnORIG.preprocess_images import preprocess_images
 from mrcnnORIG.my_inference import predict_images
@@ -395,5 +396,6 @@ def detect_cells(thepath):
 for apath in paths:
 	if os.path.isfile(apath):
 		detect_cells(apath)
+		gc.collect()
 
 print("Done segmenting cells and computing peroxisome metrics for all imaging files.")

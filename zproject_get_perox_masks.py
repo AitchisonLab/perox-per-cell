@@ -9,6 +9,7 @@ import cv2
 import unidecode
 import tkinter as tk
 import json
+import platform
 
 from PIL import Image
 from PIL.TiffTags import TAGS 
@@ -343,7 +344,13 @@ def Workflow_gja1(
 # Create the GUI
 app = tk.Tk()
 app.title('p e r o x - p e r - c e l l')
-app.geometry('600x275')
+
+platform = platform.system()
+
+if platform == "Darwin":
+    app.geometry('675x275')  # Need some extra room on Mac
+else:
+    app.geometry('600x275')
 
 # Create a textfield for inputting the file location
 filetext = tk.Text(app, height=1, width=47)
@@ -353,7 +360,7 @@ processdirvar = tk.IntVar()
 processdirbutton = tk.Checkbutton(app, text="Process all files in directory", variable=processdirvar, onvalue=1, offvalue=0)
 
 # Create an open file button
-open_button = ttk.Button(app, text='Select file', command=open_text_file)
+open_button = ttk.Button(app, text='Select', command=open_text_file)
 run_button = ttk.Button(app, text='Run', command=run_job, width=10)
 
 # Peroxisome detection sensitivity
