@@ -12,9 +12,6 @@ Automated quantification of peroxisome characteristics in yeast cells based on f
    - [On Linux](#on-linux)
  - [OUTPUT](#output)
  - [CONTACT](#contact)
- - [ATTRIBUTION](#attribution)
-   - [Allen Institute Cell & Structure Segmenter](#allen-institute-cell--structure-segmenter)
-   - [YeastSpotter](#yeastspotter)
 
 
 ## SCOPE
@@ -33,21 +30,20 @@ The environment variable `JAVA_HOME` or `CP_JAVA_HOME` must also be set and must
 If you need help setting the environment variable, [this page](https://www.wikihow.com/Set-Java-Home) may be helpful.
 
 ## RUNNING THE PROGRAM
-Currently, the program processes one input file at a time. Mac and Linux users: Please keep all program files where they are in the downloaded repository. Otherwise, the program will likely fail to run.
+Currently, the program processes one input file at a time. Please keep all program files where they are in the downloaded repository. Otherwise, the program will likely fail to run.
 
 [An example input imaging file (ZVI format) capturing data from wild-type cells can be downloaded here](https://drive.google.com/file/d/1wJ4VLxBQHVSehQ41q6cxrtBX_huBt-Bj/view?usp=sharing). 
 
 ### On Windows
 1) Download and extract one of the perox-per-cell Windows executable package ZIPs under [Releases](https://github.com/AitchisonLab/perox-per-cell/releases).
-2) Open the extracted perox_per_cell.bat file in a text editor and edit line 4 to provide the full path to the input imaging file you wish to process.
-3) If needed, edit the values for parameters `POdotcut`, `POminarea`, and `POmaxintensity` in the .bat file.
-    - `POdotcut` sets the sensitivity of peroxisome detection (lower is more sensitive)
-    - `POminarea` sets the minimum size, in pixels, for a peroxisome to be counted
-    - `POmaxintensity` should be set to one less than the maximum possible pixel intensity value for the input image. In other words, 2^(bit depth of input image) - 1
-5) Save the edited perox_per_cell.bat file, then double-click it to execute the program. 
-6) A command prompt window will appear and show messages output by the program. You may see many Java-related messages that can be ignored. When the program finishes, the window will close automatically. In initial tests, the program takes less than 90 seconds to complete on a garden variety Windows desktop.
-To keep the window containing the output messages from the program open after the program ends, you can also run the program from the command line by opening a command prompt, `cd`'ing to the directory containing the perox_per_cell.bat file and entering the command
-`perox_per_cell.bat`
+2) Double-click the extracted perox_per_cell.bat file. This will open a command prompt and the perox-per-cell GUI.
+3) Select an imaging file to process by pressing the "Select" button. You can choose to batch process all files in the directory by checking the "Process all files in directory" checkbutton.
+4) If needed, edit the values for parameters in the GUI
+    - The first sets the sensitivity of peroxisome detection (lower is more sensitive). Default is 0.0064.
+    - The second sets the minimum size, in pixels, for a peroxisome to be counted. Default is 1.
+    - The third should be set to one less than the maximum possible pixel intensity value for the input image. In other words, 2^(bit depth of input image) - 1. Default is 16383.
+5) Press Run 
+6) The GUI will close and messages output by the program will appear in the command prompt. When the run finishes, the GUI will re-open and another run can be performed. In initial tests, the program takes less than 90 seconds to process one imaging file on a garden variety Windows desktop.
 
 ### On Mac OS X
 Currently, a standalone executable for Mac OS X is not available. Installing the tool on Mac OS X requires setting up two conda environments that are then used to execute python files in the perox-per-cell repository.
@@ -93,7 +89,7 @@ Most of this will be done using commands entered in the Terminal app. Open it by
     
     - For users with x86_64 processors: `conda env create -f mac_environment_cseg.yml`
 
- 5) Open the perox-per-cell-macos.sh file in an editor and edit the line in the script that starts with “source” so that it points to your conda.sh file. (You only need to do this once, not each time you run the script.) If needed, you can get the directory containing the conda.sh file using the command.
+ 5) Open the perox_per_cell_macos.sh file in an editor and edit the line in the script that starts with “source” so that it points to your conda.sh file. (You only need to do this once, not each time you run the script.) If needed, you can get the directory containing the conda.sh file using the command.
 
     `conda info | grep -i 'base environment'`
      
@@ -104,15 +100,6 @@ Most of this will be done using commands entered in the Terminal app. Open it by
  6) Start using perox-per-cell
 
     Installation of the necessary files is complete and now the program can be executed.
-
-    In the perox-per-cell-macos.sh file provided in the repository, enter the value for input parameter "file" (line 2 by default) so that it will process the desired image. For example
-
-    `file="/Users/someuser/images/image1.zvi"`
-     
-    Make sure the other input parameters `POdotcut`, `POminarea`, and `POmaxintensity`, are set correctly for the analysis.
-    - `POdotcut` sets the sensitivity of peroxisome detection (lower is more sensitive)
-    - `POminarea` sets the minimum size, in pixels, for a peroxisome to be counted
-    - `POmaxintensity` should be set to one less than the maximum possible pixel intensity value for the input image. In other words, `2^(bit depth of input image) - 1`
     
     In a Terminal, run the perox-per-cell program by `cd`’ing to its location, then entering the command
     `./perox_per_cell_macos.sh`
@@ -120,7 +107,7 @@ Most of this will be done using commands entered in the Terminal app. Open it by
     You may need to adjust the permissions on the file to make it executable, e.g., `chmod +x perox_per_cell_macos.sh`
 
 ### On Linux
-Currently, a standalone executable for Linux is not available, but the software has been successfully tested on a Windows Subsystem for Linux (WSL v1) running Ubuntu 22.04 using the steps below. These are generally similar to the installation/execution steps for Mac OS X (above). To summarize:
+Currently, a standalone executable for Linux is not available, but initial versions of the software have been successfully tested on a Windows Subsystem for Linux (WSL v1) running Ubuntu 22.04 using the steps below. These are generally similar to the installation/execution steps for Mac OS X (above). To summarize:
 
 1) Download the perox-per-cell repository and the [RCNN weights file](https://zenodo.org/record/3598690/files/weights.zip)
 2) Ensure Java is installed and the JAVA_HOME environment variable is set
@@ -129,7 +116,7 @@ Currently, a standalone executable for Linux is not available, but the software 
    - Enter this command to create the environment for segmenting peroxisomes: `conda env create -f linux_environment_pseg.yml`
    - Enter this command to create the environment for segmenting cells: `conda env create -f linux_environment_cseg.yml`
 5) Edit the `perox_per_cell_linux.sh` file to ensure conda is sourced correctly on execution (see Mac OS X instructions for more details)
-6) Edit the location of the imaging file to process in the `perox_per_cell_linux.sh` file and adjust other parameters as needed, then execute that file.
+6) Execute the `perox_per_cell_linux.sh` file.
 
 More details on each of these steps can be found in the Mac OS X installation/execution instructions above.
 
@@ -158,61 +145,3 @@ Seattle Children's Research Institute
 
 Copyright &copy; 2023-2024
 
-## ATTRIBUTION
-### Allen Institute Cell & Structure Segmenter
-Allen Institute Software License – This software license is the 2-clause BSD
-license plus a third clause that prohibits redistribution and use for
-commercial purposes without further permission.
-
-Copyright © 2020
-Jianxu Chen, Allen Institute.  All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice, this
-list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-this list of conditions and the following disclaimer in the documentation
-and/or other materials provided with the distribution.
-
-3. Redistributions and use for commercial purposes are not permitted without
-the Allen Institute’s written permission. For purposes of this license,
-commercial purposes are the incorporation of the Allen Institute's software
-into anything for which you will charge fees or other compensation or use of
-the software to perform a commercial service for a third party. Contact
-terms@alleninstitute.org for commercial licensing opportunities.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-### YeastSpotter
-
-YeastSpotter Mask R-CNN copyright &copy; 2017 Matterport, Inc.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
