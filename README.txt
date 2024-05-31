@@ -1,27 +1,30 @@
 ~~~ perox-per-cell ~~~
 
-A program for automatically quantifying the number of peroxisomes in yeast cells based on 
-fluorescence microscopy images.
+Automated quantification of peroxisome characteristics in yeast cells
 
 ---------
 | SCOPE |
 ---------
-This program processes Zeiss Vision Image (.zvi) files to quantify the number of peroxisomes 
-per yeast cell as well as cell area and cytosolic peroxisomal signal. It expects the .zvi file
-to include two channels: the first should contain fluoresence microscopy images of GFP-tagged 
-peroxisomal markers in a z-stack, the second channel should contain fluorescence images of the same
-z-stack but captures whole cells stained with calcofluor white.
+This program processes microscopy files to quantify the number of peroxisomes per yeast cell, 
+cell and peroxisome areas, cytosolic peroxisomal signal intensities, as well as other features. 
+It expects the input file to include two channels: the first should contain fluoresence microscopy 
+images of GFP-tagged peroxisomal markers in a Z-stack, the second channel should contain 
+fluorescence images of the same Z-stack but capturing whole cells stained with calcofluor white.
 
-The program first generates intensity projections for both channels. Working from these
-two images, the program then segments the peroxisomes using the Allen Cell and Structure Segmenter
+While the software has primarily been tested using Zeiss Vision Image (.zvi) files, other imaging 
+foramts such as TIFF files can also be used. Furthermore, Z-stacks are not required: 2D images 
+can also be used for both channels.
+
+The program first generates intensity projections for both channels. Working from the resulting 2D 
+images, the program then segments the peroxisomes using the Allen Cell and Structure Segmenter
 (https://www.allencell.org/segmenter.html) and then segments whole cells using a neural network-based 
-method (https://github.com/alexxijielu/yeast_segmentation). For each individual cell
-identified in the latter step, the program determines the number of unique peroxisome objects
-contained within that cell's boundary using output from the former step. It also computes the cell's
-physical area based on pixel resolution in the .zvi file metadata as well as the total cytosolic
+method (https://github.com/alexxijielu/yeast_segmentation). For each individual cell identified in 
+the latter step, the program determines the number of unique peroxisome objects contained within 
+that cell's boundary using output from the former step. It also computes the cell's physical area 
+based on pixel resolution in the input file metadata as well as the total cytosolic 
 (i.e., non-peroxisomal) signal present in the GFP channel. The program uses data from the maximal 
-intensity projection of the GFP channel to quantify the latter signal. 
-The program excludes cells that lie on the image border.
+intensity projection of the GFP channel to quantify the latter signal. The program excludes cells 
+that lie on the image border.
 
 -----------------
 | PREREQUISITES |
@@ -35,26 +38,33 @@ the bioformats package can use java to load in the raw image file.
 -----------------------
 | RUNNING THE PROGRAM |
 -----------------------
-Currently, the program processes one .zvi file at a time. Please keep all files where they are
-in the perox-per-cell program directory or else the program will probably break.
+Please keep all files where they are in the perox-per-cell program directory or else the program 
+will probably break.
 
-1) Open the perox_per_cell.bat file in a text editor and edit line 4 to provide the 
-full path to the .zvi you wish to process.
+1) Download and extract one of the perox-per-cell Windows executable package ZIPs under Releases
+on the perox-per-cell GitHub site: https://github.com/AitchisonLab/perox-per-cell/releases
 
-2) Set the POdotcut (default=0.0064) and POminarea (default=1) parameters. The former controls the PO
-detection sensitivity (lower is more sensitive) and the latter sets the minimum size (in pixels) 
-threshold for peroxisomes
+2) Double-click the extracted perox_per_cell.bat file. This will open a command prompt and the 
+perox-per-cell GUI.
 
-3) Save the edited perox_per_cell.bat file, then double-click it to run the program. 
+3) Select an imaging file to process by pressing the "Select" button. You can choose to batch process 
+all files in the directory by checking the "Process all files in directory" checkbutton.
 
-4) A command prompt window will appear and show messages output by the program. When the 
-program finishes, this window will close automatically. In initial tests, the program took
-about 4 minutes to complete on a garden variety Windows desktop.
+4) If needed, edit the values for parameters in the GUI
+	- The first sets the sensitivity of peroxisome detection (lower is more sensitive). Default is 0.0064.
+	- The second sets the minimum size, in pixels, for a peroxisome to be counted. Default is 1.
+	- The third should be set to one less than the maximum possible pixel intensity value for the input image.
+    	In other words, 2^(bit depth of input image) - 1. Default is 16383.
+		
+5) Press Run
 
-To keep the window containing the output messages from the program open after the program
-ends, you can also run the program from the command line by opening a command prompt, cd'ing
-to the directory containing the perox_per_cell.bat file and entering the command
-perox_per_cell.bat
+6) The GUI will close and messages output by the program will appear in the command prompt. When the run 
+finishes, the GUI will re-open and another run can be performed. In initial tests, the program takes less 
+than 90 seconds to process one imaging file on a garden variety Windows desktop.
+
+Please see instructions on the perox-per-cell GitHub site for running on Mac and Linux machines:
+https://github.com/AitchisonLab/perox-per-cell/blob/main/README.md#on-mac-os-x
+https://github.com/AitchisonLab/perox-per-cell/blob/main/README.md#on-linux
 
 ----------
 | OUTPUT |
@@ -84,18 +94,3 @@ Center for Global Infectious Disease Research
 Seattle Children's Research Institute
 
 (c) 2023-2024
-
----------------
-| ATTRIBUTION |
----------------
-
-perox-per-cell uses YeastSpotter
-
-YeastSpotter Mask R-CNN copyright (c) 2017 Matterport, Inc.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
