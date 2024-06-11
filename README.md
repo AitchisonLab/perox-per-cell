@@ -6,6 +6,7 @@ Automated quantification of peroxisome characteristics in yeast cells based on f
 
 - [SCOPE](#scope)
  - [PREREQUISITES](#prerequisites)
+   - [Example Imaging Data](#example-imaging-data)
  - [RUNNING THE PROGRAM](#running-the-program)
    - [On Windows](#on-windows)
    - [On Mac OS X](#on-mac-os-x)
@@ -29,10 +30,13 @@ If you need to install it, go to https://www.java.com/download/ie_manual.jsp.
 The environment variable `JAVA_HOME` or `CP_JAVA_HOME` must also be set and must point to a valid Java installation so that the Bioformats package can be used to load imaging files.
 If you need help setting the environment variable, [this page](https://www.wikihow.com/Set-Java-Home) may be helpful.
 
+## Example Imaging Data
+[An example input imaging file (ZVI format) capturing data from wild-type cells can be downloaded here](https://drive.google.com/file/d/1wJ4VLxBQHVSehQ41q6cxrtBX_huBt-Bj/view?usp=sharing). 
+
+[A set of 44 imaging files (ZVI format) capturing data from various yeast strains with known peroxisomal defects can be downloaded here](https://doi.org/10.5281/zenodo.11375101).
+
 ## RUNNING THE PROGRAM
 Please keep all program files where they are in the downloaded repository. Otherwise, the program will likely fail to run.
-
-[An example input imaging file (ZVI format) capturing data from wild-type cells can be downloaded here](https://drive.google.com/file/d/1wJ4VLxBQHVSehQ41q6cxrtBX_huBt-Bj/view?usp=sharing). 
 
 ### On Windows
 1) Download and extract one of the perox-per-cell Windows executable package ZIPs under [Releases](https://github.com/AitchisonLab/perox-per-cell/releases).
