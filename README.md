@@ -19,12 +19,12 @@ Automated quantification of peroxisome characteristics in yeast cells based on f
 This program processes microscopy files to quantify the number of peroxisomes per yeast cell, cell and peroxisome areas, cytosolic peroxisomal signal intensities, as well as other features.
 It expects the input file to include two channels: the first should contain fluoresence microscopy images of GFP-tagged peroxisomal markers in a Z-stack, the second channel should contain fluorescence images of the same Z-stack but capturing whole cells stained with calcofluor white. 
 
-While the software has primarily been tested using Zeiss Vision Image (.zvi) files, other imaging foramts such as TIFF files can also be used. Furthermore, Z-stacks are not required: 2D images can also be used for both channels. 
+While the software has primarily been tested using Zeiss Vision Image (.zvi) files, other imaging formats such as TIFF files can also be used. Furthermore, Z-stacks are not required: 2D images can also be used for both channels. 
 
-The program first generates intensity projections for both channels. Working from the resulting 2D images, the program then segments the peroxisomes using the [Allen Cell and Structure Segmenter](https://www.allencell.org/segmenter.html) and then segments whole cells using a neural network-based method called [YeastSpotter](https://github.com/alexxijielu/yeast_segmentation). For each individual cell identified in the latter step, the program determines the number of unique peroxisome objects contained within that cell's boundary using output from the former step. It also computes the cell's physical area based on pixel resolution in the input file metadata as well as the total cytosolic (i.e., non-peroxisomal) signal present in the GFP channel. The program uses data from the maximal intensity projection of the GFP channel to quantify the latter signal. The program excludes cells that lie on the image border.
+The program first generates intensity projections for both channels. Working from the resulting 2D images,it then segments peroxisomes using the [Allen Cell and Structure Segmenter](https://www.allencell.org/segmenter.html) and then segments whole cells using a neural network-based method named [YeastSpotter](https://github.com/alexxijielu/yeast_segmentation). For each individual cell identified in the latter step, the program determines the number of unique peroxisome objects contained within that cell's boundary using output from the former step. It also computes the cell's physical area based on pixel resolution in the input file metadata as well as the total cytosolic (i.e., non-peroxisomal) signal present in the GFP channel. The program uses data from the maximal intensity projection of the GFP channel to quantify the cytosolic signal. The program excludes cells that lie on the image border.
 
 ## PREREQUISITES
-The program requires that you have Java installed on your machine.
+The program requires that you have Java installed.
 If you need to install it, go to https://www.java.com/download/ie_manual.jsp.
 
 The environment variable `JAVA_HOME` or `CP_JAVA_HOME` must also be set and must point to a valid Java installation so that the Bioformats package can be used to load imaging files.
@@ -40,8 +40,8 @@ Please keep all program files where they are in the downloaded repository. Other
 
 ### On Windows
 1) Download and extract one of the perox-per-cell Windows executable package ZIPs under [Releases](https://github.com/AitchisonLab/perox-per-cell/releases).
-2) Double-click the extracted perox_per_cell.bat file. This will open a command prompt and the perox-per-cell GUI.
-3) Select an imaging file to process by pressing the "Select" button. You can choose to batch process all files in the directory by checking the "Process all files in directory" checkbutton.
+2) Double-click the extracted perox_per_cell.bat file. This will open a command prompt and the perox-per-cell GUI. It may take a few seconds to load.
+3) Select an imaging file to process by pressing the "Select" button. You can choose to batch process all files in the image's folder by checking the "Process all files in directory" checkbutton.
 4) If needed, edit the values for parameters in the GUI
     - The first sets the sensitivity of peroxisome detection (lower is more sensitive). Default is 0.0064.
     - The second sets the minimum size, in pixels, for a peroxisome to be counted. Default is 1.
@@ -50,7 +50,7 @@ Please keep all program files where they are in the downloaded repository. Other
 6) The GUI will close and messages output by the program will appear in the command prompt. When the run finishes, the GUI will re-open and another run can be performed. In initial tests, the program takes less than 90 seconds to process one imaging file on a garden variety Windows desktop.
 
 ### On Mac OS X
-Currently, a standalone executable for Mac OS X is not available. Installing the tool on Mac OS X requires setting up two conda environments that are then used to execute python files in the perox-per-cell repository.
+Currently, a standalone executable for Mac OS X is not available. Installing the tool on Mac OS X requires setting up two conda environments that are then used to execute Python files in the perox-per-cell repository.
 
 The software has not been extensively tested on Mac but the instructions below work for installation on an M1 Silicon machine running OS X 13.6.1, Java JDK 16.0.2 and conda 24.1.2.
 
@@ -74,14 +74,14 @@ Most of this will be done using commands entered in the Terminal app. Open it by
 
     In either case, restart your shell after entering the command.
    
- 3) Next, ensure that conda is installed. Conda is a tool for managing virtual python environments. See [this website](https://docs.conda.io/projects/conda/en/stable/user-guide/install/index.html) for instructions on installing conda. Be sure to download the version that works for your processor (x86_64 or M1 Silicon)
- 4) Using conda, set up two virtual python environments - one is used for segmenting peroxisomes, the other for cells.
+ 3) Next, ensure that Conda is installed. Conda is a tool for managing virtual Python environments. See [this website](https://docs.conda.io/projects/conda/en/stable/user-guide/install/index.html) for instructions on installing conda. Be sure to download the version that works for your processor (x86_64 or M1 Silicon)
+ 4) Using Conda, set up two virtual Python environments - one is used for segmenting peroxisomes, the other for cells.
     
     First, set up the environment for segmenting peroxisomes. Using the Terminal, `cd` to your downloaded perox-per-cell repository directory using the command
     
     `cd [path to downloaded repository]`
     
-    Next, enter one of the following commands in a terminal to create the conda environment for peroxisome segmentation (this may take several minutes to complete because it will install a number of pip dependencies) 
+    Next, enter one of the following commands in a terminal to create the Conda environment for peroxisome segmentation (this may take several minutes to complete because it will install a number of dependencies) 
 
     - For users with M1 Silicon processors (arm64 architecture): `CONDA_SUBDIR=osx-64 conda env create -f mac_environment_pseg.yml`
 
@@ -115,8 +115,8 @@ Currently, a standalone executable for Linux is not available, but initial versi
 
 1) Download the perox-per-cell repository and the [RCNN weights file](https://zenodo.org/record/3598690/files/weights.zip)
 2) Ensure Java is installed and the JAVA_HOME environment variable is set
-3) Ensure that conda is installed
-4) Use the YAML files in the perox-per-cell repository to create the two conda environments needed for segmenting peroxisomes and cells. Use the Linux-specific YAML files:
+3) Ensure that Conda is installed
+4) Use the YAML files in the perox-per-cell repository to create the two Conda environments needed for segmenting peroxisomes and cells. Use the Linux-specific YAML files:
    - Enter this command to create the environment for segmenting peroxisomes: `conda env create -f linux_environment_pseg.yml`
    - Enter this command to create the environment for segmenting cells: `conda env create -f linux_environment_cseg.yml`
 5) Edit the `perox_per_cell_linux.sh` file to ensure conda is sourced correctly on execution (see Mac OS X instructions for more details)
