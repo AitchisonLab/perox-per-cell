@@ -1,6 +1,6 @@
 #!/bin/bash
  
-echo "Running perox-per-cell..."
+echo "Loading perox-per-cell..."
 SCRIPTDIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 # Source conda, otherwise conda init error messages may appear. If needed, edit the
