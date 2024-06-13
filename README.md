@@ -47,7 +47,7 @@ Please keep all program files where they are in the downloaded repository. Other
     - The second sets the minimum size, in pixels, for a peroxisome to be counted. Default is 1.
     - The third should be set to one less than the maximum possible pixel intensity value for the input image. In other words, 2^(bit depth of input image) - 1. Default is 16383.
 5) Press Run 
-6) The GUI will close and messages output by the program will appear in the command prompt. When the run finishes, the GUI will re-open and another run can be performed. In initial tests, the program takes less than 90 seconds to process one imaging file on a garden variety Windows desktop.
+6) The GUI will close and messages output by the program will appear in the command prompt. You may see warning messages related to TensorFlow but they can be ignored. When the run finishes, the GUI will re-open and another run can be performed. In initial tests, the program takes less than 90 seconds to process one imaging file on a garden variety Windows desktop.
 
 ### On Mac OS X
 Currently, a standalone executable for Mac OS X is not available. Installing the tool on Mac OS X requires setting up two conda environments that are then used to execute Python files in the perox-per-cell repository.
