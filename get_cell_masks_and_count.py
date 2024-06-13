@@ -27,6 +27,7 @@ def set_column_widths(theworksheet, thedf, width):
 
 version = "0.0.6"
 configloc = sys.argv[1]  # Configuration file for job
+print("Working from configuration file at " + configloc)
 
 print("Using yeast_segmentation to segment cells...")
 

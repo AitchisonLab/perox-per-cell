@@ -3,8 +3,7 @@
 import sys
 import numpy as np
 import os
-import bioformats
-import javabridge
+
 import cv2
 import unidecode
 import tkinter as tk
@@ -31,8 +30,19 @@ from tkinter import filedialog as fd
 from tkinter import Label
 from tkinter import messagebox
 
-batchpath = sys.argv[1]
+try:
+    import bioformats
+    import javabridge
+except:
+    messagebox.showerror('Bioformats error', 'There was an issue loading the Java bridge and Bioformats.\n\n' +
+                         'Please make sure Java is installed and the JAVA_HOME environment variable is set.\n\n' +
+                         'Details about these program prerequisites are available in the README at https://github.com/AitchisonLab/perox-per-cell')
+    sys.exit()
 
+
+batchpath = sys.argv[1]
+batchpath = os.path.join(batchpath, '')
+print("Executable directory is " + batchpath)
 
 # Function for opening the file dialog
 def open_text_file():
