@@ -29,6 +29,14 @@ from tkinter import ttk
 from tkinter import filedialog as fd
 from tkinter import Label
 from tkinter import messagebox
+from tkinter import OptionMenu
+from tkinter import StringVar
+
+from cellpose import models, io
+from cellpose.io import imread as cpimread
+
+import quantify_POs_per_cell
+
 
 try:
     import bioformats
@@ -39,6 +47,7 @@ except:
                          'Details about these program prerequisites are available in the README at https://github.com/AitchisonLab/perox-per-cell')
     sys.exit()
 
+version = "0.0.7"  # Software version
 
 batchpath = sys.argv[1]
 batchpath = os.path.join(batchpath, '')
@@ -68,6 +77,8 @@ def run_job():
         dot_3d_cutoff_par = float(senstext.get("1.0", "end-1c"))
         minarea_par = int(minpixtext.get("1.0", "end-1c"))
         maxintensity_par = int(bitstext.get("1.0", "end-1c"))
+        print("Selected cell segmenter is " + cellseg_par)
+
     except ValueError as ve:
         messagebox.showerror('Error', 'Invalid job parameter\n' + repr(ve))
         return
@@ -114,13 +125,18 @@ def run_job():
         messagebox.showwarning('Warning', 'Some files could not be read.\n' + 'Please check that they are Bioformats-readable imaging files.\n\n' +
                                           badfiles + "\n\nPress OK to finish processing the job files that could be read.")
 
-    if processdirvar.get() == 1 or subjobval:  # If we should write out configuration file
+    # If we should write out configuration file (not written out if CellPose is used for cell segmentation)
+    # The configuration file is used when we need to pass the job configuration info to the python
+    # environment used for YeastSpotter cell segmentation
+    if (processdirvar.get() == 1 or subjobval) and cellseg_par == cellsegoptions[0]:
         # Write out configuration file, so it can be read by cell segmentation script
         configvals = {"Path": path,
                       'ProcessDir': processdirvar.get(),
                       'PeroxSensitivity': dot_3d_cutoff_par,
                       'MinPeroxArea': minarea_par,
-                      'MaxIntensity': maxintensity_par}
+                      'MaxIntensity': maxintensity_par,
+                      'CellSegmenter': cellseg_par,
+                      'Version': version}
 
         configloc = batchpath + 'ppc_job_config.json'
 
@@ -256,6 +272,55 @@ def run_subjob(path="", dot_3d_cutoff_par=0.0064, minarea_par=1, maxintensity_pa
     print("Peroxisome intensity projections written to " + zprojdirperox)
     print("Cell intensity projections written to " + zprojdircells)
     print("Peroxisome masks written to " + os.path.abspath(maskdir))
+
+    # If using YeastSpotter, don't run segmenter. If using CellPose, run cell segmentation as well as
+    # PO per cell quantification here
+    if cellseg_par == cellsegoptions[0]:
+        return True
+
+    # Process with CELLPOSE. model_type='cyto' or 'nuclei' or 'cyto2' or 'cyto3'
+    if not os.path.exists(zprojdircells):
+        print("Skipping cell segmentation for " + path + ": Z-projection folder not present.")
+        return
+
+    if not os.path.exists(maskdir):
+        os.makedirs(maskdir)
+
+    themodeltype = 'cyto3'
+    model = models.Cellpose(model_type=themodeltype)
+
+    # list of files
+    files = [zprojdircells + tail + "_cells_Zprojection.tiff"]
+    imgs = [cpimread(fi) for fi in files]
+    nimg = len(imgs)
+    print("number of images for CellPose: " + str(nimg))
+    print("Segmenting cells...")
+
+    # # CellPose documentation: define CHANNELS to run segementation on
+    # grayscale=0, R=1, G=2, B=3
+    # channels = [cytoplasm, nucleus]
+    # if NUCLEUS channel does not exist, set the second channel to 0
+    # IF ALL YOUR IMAGES ARE THE SAME TYPE, you can give a list with 2 elements
+    # channels = [0,0] # IF YOU HAVE GRAYSCALE
+    # channels = [2,3] # IF YOU HAVE G=cytoplasm and B=nucleus
+    # channels = [2,1] # IF YOU HAVE G=cytoplasm and R=nucleus
+    # if diameter is set to None, the size of the cells is estimated on a per image basis
+    # you can set the average cell `diameter` in pixels yourself (recommended)
+    # diameter can be a list or a single number for all images
+    channels = [[0, 0]]
+    masks, flows, styles, diams = model.eval(imgs, diameter=None, channels=channels)
+
+    # Write out mask to file (copied from mrccn.convert_to_image.py)
+    cpmaskimage = Image.fromarray(masks[0])
+    cpcellmaskfile = maskdir + os.path.splitext(tail)[0] + '.tif'
+    cpmaskimage.save(cpcellmaskfile)
+
+    print("Finished cell segmentation with CellPose.")
+
+    # Use peroxisome and cell masks to quantify POs per cell and write out results
+    quantify_POs_per_cell.quantify_and_save(path, maskdir, dot_3d_cutoff_par, minarea_par,
+                                            maxintensity_par, cellseg_par, version)
+
     return True
 
 
@@ -357,9 +422,9 @@ app.title('p e r o x - p e r - c e l l')
 platform = platform.system()
 
 if platform == "Darwin":
-    app.geometry('675x275')  # Need some extra room on Mac
+    app.geometry('735x325')  # Need some extra room on Mac
 else:
-    app.geometry('600x275')
+    app.geometry('660x325')
 
 # Create a textfield for inputting the file location
 filetext = tk.Text(app, height=2, width=47)
@@ -384,6 +449,27 @@ minpixtext.insert('1.0', '1')
 bitstext = tk.Text(app, height=1, width=7)
 bitstext.insert('1.0', '16383')
 
+# Dropdown menu options for cell segmentation
+cellsegoptions = ["YeastSpotter", "CellPose"]
+
+# datatype of menu text
+cellsegclicked = StringVar()
+
+# initial menu text
+cellsegclicked.set(cellsegoptions[0])
+
+cellseg_par = cellsegoptions[0]
+
+
+# Function to print the index of selected option in Combobox
+def callback(*arg):
+    global cellseg_par
+    cellseg_par = str(cellsegclicked.get())
+
+
+# Set the tracing for the cell segmentation parameter
+cellsegclicked.trace('w', callback)
+
 # Specify the location of elements in GUI
 Label(app, text="File to process").grid(row=0, column=0, padx=5, pady=10, sticky='nsew')
 filetext.grid(column=1, row=0, columnspan=2, sticky='nsew', pady=10)
@@ -397,8 +483,14 @@ Label(app, text="Minimum pixel count for peroxisomes").grid(column=1, row=4, pad
 minpixtext.grid(column=2, row=4, pady=10, padx=0)
 Label(app, text="Maximum intensity value in peroxisome channel (2^bit_depth – 1)").grid(column=1, row=5, pady=10, padx=2, sticky='e')
 bitstext.grid(column=2, row=5, pady=10, padx=0)
-ttk.Separator(app, orient='horizontal').grid(column=0, row=6, columnspan=4, sticky="ew", pady=3, padx=3)
-run_button.grid(column=0, row=7, columnspan=4, pady=15)
+Label(app, text="Cell segmentation algorithm").grid(column=1, row=6, pady=10, padx=2, sticky='e')
+
+cellsegoptionmenu = OptionMenu(app, cellsegclicked, *cellsegoptions)
+cellsegoptionmenu.config(width=10)
+cellsegoptionmenu.grid(column=2, row=6, pady=10, padx=2, sticky='e')
+
+ttk.Separator(app, orient='horizontal').grid(column=0, row=7, columnspan=4, sticky="ew", pady=3, padx=3)
+run_button.grid(column=0, row=8, columnspan=4, pady=15)
 
 # Make infinite loop for displaying app on the screen
 print("\nperox-per-cell GUI ready.")
