@@ -145,7 +145,10 @@ def run_job():
 
         app.destroy()  # Remove GUI
     else:
-        app.deiconify()  # Un-hide the app so the user can configure a different job
+        print("Job finished.")
+        print("\nperox-per-cell GUI ready.")
+        print("Please enter job configuration parameters and press \"Run\".")
+        app.deiconify()  # Un-hide the app so the user can configure a new job
 
 
 def run_subjob(path="", dot_3d_cutoff_par=0.0064, minarea_par=1, maxintensity_par=16383):

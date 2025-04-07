@@ -36,7 +36,7 @@ do
                 conda activate cseg
 
                 # Get cell masks
-                python get_cell_masks_and_count.py "$configfile"
+                python get_cell_masks_YS_and_count.py "$configfile"
 
                 # Deactivate Python 3.5 environment
                 conda deactivate
