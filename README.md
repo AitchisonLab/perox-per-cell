@@ -147,5 +147,5 @@ Center for Global Infectious Disease Research
 
 Seattle Children's Research Institute
 
-Copyright &copy; 2023-2024
+Copyright &copy; 2023-2025
 
