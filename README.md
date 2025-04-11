@@ -1,8 +1,12 @@
 # perox-per-cell
-Automated quantification of peroxisome characteristics in yeast cells based on fluorescence microscopy images
+Automated quantification of peroxisome characteristics from fluorescence microscopy images.
+
+[The peer-reviewed paper describing the software is available here.](https://doi.org/10.1093/bioinformatics/btae442.)
+#### Citation:
+Neal ML, Shukla N, Mast FD, Farré JC, Pacio TM, Raney-Plourde KE, Prasad S, Subramani S, Aitchison JD. Automated, image-based quantification of peroxisome characteristics with perox-per-cell. Bioinformatics. 2024 Jul 13;40(7):btae442.
 
 
-#### Table of Contents
+## Table of Contents
 
 - [SCOPE](#scope)
  - [PREREQUISITES](#prerequisites)
