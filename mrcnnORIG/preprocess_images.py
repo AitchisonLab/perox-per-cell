@@ -2,6 +2,7 @@ import numpy as np
 from PIL import Image
 import os
 import skimage.exposure
+import re
 
 '''Convert input images to RGB format in separate folders required by MRCNN
 
@@ -24,8 +25,7 @@ def preprocess_images(inputdirectory, outputdirectory, outputfile, verbose = Fal
 
     for imagename in os.listdir(inputdirectory):
         try:
-            if verbose:
-                print ("Preprocessing ", imagename)
+            print("Preprocessing ", imagename)
 
             image = np.array(Image.open(inputdirectory + imagename))
             if len(image.shape) > 2:
@@ -39,7 +39,9 @@ def preprocess_images(inputdirectory, outputdirectory, outputfile, verbose = Fal
             image = np.expand_dims(image, axis=-1)
             rgbimage = np.tile(image, 3)                          #convert to RGB
 
-            imagename = imagename.split(".")[0]
+            imagename = re.sub("_cells_Zprojection.*", "", imagename)
+            imagename = imagename.rsplit(".", 1)[0]
+            print("Image ID is " + imagename)
 
             if not os.path.exists(outputdirectory + imagename):
                 os.makedirs(outputdirectory + imagename)

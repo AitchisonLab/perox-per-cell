@@ -3,6 +3,7 @@
 import sys
 import numpy as np
 import os
+import traceback
 
 import cv2
 import unidecode
@@ -121,9 +122,13 @@ def run_job():
                 print(apath + " could not be processed")
 
     if len(filesnotprocessed) > 0:  # Report files that couldn't be processed, if we're doing a batch
-        badfiles = '\n'.join(filesnotprocessed)
-        messagebox.showwarning('Warning', 'Some files could not be read.\n' + 'Please check that they are Bioformats-readable imaging files.\n\n' +
-                                          badfiles + "\n\nPress OK to finish processing the job files that could be read.")
+        badfiles = ''
+
+        for badfile in filesnotprocessed:
+            badfiles += '    ' + badfile + '\n'
+
+        messagebox.showwarning('Warning', 'Some files could not be processed.\n' + 'Please check that they are Bioformats-readable imaging files and contain pixel size metadata.\n\n' +
+                                          badfiles + "\n\nPress OK or close message to finish processing any remaining jobs.")
 
     # If we should write out configuration file (not written out if CellPose is used for cell segmentation)
     # The configuration file is used when we need to pass the job configuration info to the python
@@ -164,22 +169,23 @@ def run_subjob(path="", dot_3d_cutoff_par=0.0064, minarea_par=1, maxintensity_pa
     # Get image metadata
     try:
         md = bioformats.get_omexml_metadata(path)
-    except:
+        md = bioformats.omexml.OMEXML(md)
+        pixels = md.image(0).Pixels
+
+        channel_count = pixels.SizeC
+        stack_count = pixels.SizeZ
+        timepoint_count = pixels.SizeT
+        sizex = pixels.SizeX
+        sizey = pixels.SizeY
+        physsizexunit = pixels.PhysicalSizeXUnit
+        physsizeyunit = pixels.PhysicalSizeYUnit
+        physsizex = pixels.PhysicalSizeX
+        physsizey = pixels.PhysicalSizeY
+        pixarea = float(physsizex) * float(physsizey)
+    except Exception as e:
+        print(traceback.format_exc())
+        print('Failed to read image')
         return False
-
-    md = bioformats.omexml.OMEXML(md)
-    pixels = md.image(0).Pixels
-
-    channel_count = pixels.SizeC
-    stack_count = pixels.SizeZ
-    timepoint_count = pixels.SizeT
-    sizex = pixels.SizeX
-    sizey = pixels.SizeY
-    physsizexunit = pixels.PhysicalSizeXUnit
-    physsizeyunit = pixels.PhysicalSizeYUnit
-    physsizex = pixels.PhysicalSizeX
-    physsizey = pixels.PhysicalSizeY
-    pixarea = float(physsizex) * float(physsizey)
 
     print("Channel count: " + str(channel_count))
     print("Stack count: " + str(stack_count))

@@ -12,7 +12,7 @@ rlefile: csv file containing compressed masks from the segmentation algorithm
 outputdirectory: directory to write images to
 preprocessed_image_list: csv file containing list of images and their heights and widths'''
 def convert_to_image(rlefile, outputdirectory, preprocessed_image_list,
-                     rescale = False, scale_factor = 2, verbose = False):
+                     rescale=False, scale_factor=2, verbose=False):
 
     rle = csv.reader(open(rlefile), delimiter=',')
     rle = np.array([row for row in rle])[1:, :]
@@ -25,7 +25,7 @@ def convert_to_image(rlefile, outputdirectory, preprocessed_image_list,
       rleNumbers = [int(numstring) for numstring in rleString.split(' ')]
       rlePairs = np.array(rleNumbers).reshape(-1,2)
       img = np.zeros(rows*cols,dtype=np.uint8)
-      for index,length in rlePairs:
+      for index, length in rlePairs:
         index -= 1
         img[index:index+length] = 255
       img = img.reshape(cols,rows)
@@ -39,9 +39,11 @@ def convert_to_image(rlefile, outputdirectory, preprocessed_image_list,
 
     files = np.unique(rle[:, 0])
     for f in files:
+
+        print("Converting", f, "to mask...")
+
         if verbose:
             start_time = time.time()
-            print ("Converting", f, "to mask...")
 
         list_index = np.where(image_list[:, 0] == f)[0][0]
         file_string = image_list[list_index, 1]
@@ -66,13 +68,14 @@ def convert_to_image(rlefile, outputdirectory, preprocessed_image_list,
             currobj = currobj + 1
 
         if rescale:
-            image = skimage.transform.resize(image, output_shape = (height, width), order=0, preserve_range = True)
+            image = skimage.transform.resize(image, output_shape=(height, width), order=0, preserve_range=True)
 
         image = Image.fromarray(image)
+        print("Saving to " + outputdirectory + f + ".tif")
         image.save(outputdirectory + f + ".tif")
 
         if verbose:
-            print ("Completed in", time.time() - start_time)
+            print("Completed in", time.time() - start_time)
             
 def convert_to_imagej(inputdirectory, outputdirectory):
     import os
