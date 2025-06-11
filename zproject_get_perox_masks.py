@@ -75,10 +75,10 @@ def run_job():
 
     # Collect image analysis parameters for job
     try:
-        dot_3d_cutoff_par = float(senstext.get("1.0", "end-1c"))
-        minareaPO_par = int(minpixPOtext.get("1.0", "end-1c"))
-        minareacell_par = int(minpixcelltext.get("1.0", "end-1c"))
-        maxintensity_par = int(bitstext.get("1.0", "end-1c"))
+        dot_3d_cutoff_par = float(senstext.get())
+        minareaPO_par = int(minpixPOtext.get())
+        minareacell_par = int(minpixcelltext.get())
+        maxintensity_par = int(bitstext.get())
         print("Selected cell segmenter is " + cellseg_par)
 
     except ValueError as ve:
@@ -453,20 +453,24 @@ open_button = ttk.Button(app, text='Select', command=open_text_file)
 run_button = ttk.Button(app, text='Run', command=run_job, width=10)
 
 # Peroxisome detection sensitivity
-senstext = tk.Text(app, height=1, width=7)
-senstext.insert('1.0', '0.0064')
+senstextvar = tk.StringVar()
+senstextvar.set("0.0064")
+senstext = tk.Entry(app, textvariable=senstextvar, justify="right")  #, height=1, width=7)
 
 # Minimum number of pixels for peroxisomes
-minpixPOtext = tk.Text(app, height=1, width=7)
-minpixPOtext.insert('1.0', '1')
+minpixPOtextvar = tk.StringVar()
+minpixPOtextvar.set("1")
+minpixPOtext = tk.Entry(app, textvariable=minpixPOtextvar, justify="right")
 
 # Minimum number of pixels for cells
-minpixcelltext = tk.Text(app, height=1, width=7)
-minpixcelltext.insert('1.0', '1')
+minpixcelltextvar = tk.StringVar()
+minpixcelltextvar.set("1")
+minpixcelltext = tk.Entry(app, textvariable=minpixcelltextvar, justify="right")
 
 # Maximum signal intensity for peroxisome images
-bitstext = tk.Text(app, height=1, width=7)
-bitstext.insert('1.0', '16383')
+bitstextvar = tk.StringVar()
+bitstextvar.set("16383")
+bitstext = tk.Entry(app, textvariable=bitstextvar, justify="right")
 
 # Dropdown menu options for cell segmentation
 cellsegoptions = ["YeastSpotter", "CellPose"]
@@ -500,15 +504,16 @@ Label(app, text="Peroxisome detection sensitivity (lower is more sensitive)").gr
 senstext.grid(column=2, row=3, pady=10, padx=0)
 Label(app, text="Minimum pixel count for peroxisomes").grid(column=1, row=4, pady=10, padx=2, sticky='e')
 minpixPOtext.grid(column=2, row=4, pady=10, padx=0)
-Label(app, text="Minimum pixel count for cells").grid(column=1, row=5, pady=10, padx=2, sticky='e')
-minpixcelltext.grid(column=2, row=5, pady=10, padx=0)
-Label(app, text="Maximum intensity value in peroxisome channel (2^bit_depth – 1)").grid(column=1, row=6, pady=10, padx=2, sticky='e')
-bitstext.grid(column=2, row=6, pady=10, padx=0)
-Label(app, text="Cell segmentation algorithm").grid(column=1, row=7, pady=10, padx=2, sticky='e')
+Label(app, text="Maximum intensity value in peroxisome channel (2^bit_depth – 1)").grid(column=1, row=5, pady=10, padx=2, sticky='e')
+bitstext.grid(column=2, row=5, pady=10, padx=0)
 
+Label(app, text="Cell segmentation algorithm").grid(column=1, row=6, pady=10, padx=2, sticky='e')
 cellsegoptionmenu = OptionMenu(app, cellsegclicked, *cellsegoptions)
 cellsegoptionmenu.config(width=10)
-cellsegoptionmenu.grid(column=2, row=7, pady=10, padx=2, sticky='e')
+cellsegoptionmenu.grid(column=2, row=6, pady=10, padx=2, sticky='e')
+
+Label(app, text="Minimum pixel count for cells").grid(column=1, row=7, pady=10, padx=2, sticky='e')
+minpixcelltext.grid(column=2, row=7, pady=10, padx=0)
 
 ttk.Separator(app, orient='horizontal').grid(column=0, row=8, columnspan=4, sticky="ew", pady=3, padx=3)
 run_button.grid(column=0, row=9, columnspan=4, pady=15)
