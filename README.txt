@@ -56,7 +56,7 @@ all files in the directory by checking the "Process all files in directory" chec
 	- The third should be set to one less than the maximum possible pixel intensity value for the input image.
     	In other words, 2^(bit depth of input image) - 1. Default is 16383.
 	- The fourth sets the cell segmentation method to use. Default is YeastSpotter (validated on images of
-	    yeast). The alternative is CellPose (validated on various cell types).
+	    yeast). The alternative is CellPose (validated on images of various cell types).
 	- The fifth sets the minimum size, in pixels, for a segmented cell to be counted. Default is 1.
 
 5) Press Run
