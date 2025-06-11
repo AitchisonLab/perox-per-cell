@@ -76,7 +76,8 @@ def run_job():
     # Collect image analysis parameters for job
     try:
         dot_3d_cutoff_par = float(senstext.get("1.0", "end-1c"))
-        minarea_par = int(minpixtext.get("1.0", "end-1c"))
+        minareaPO_par = int(minpixPOtext.get("1.0", "end-1c"))
+        minareacell_par = int(minpixcelltext.get("1.0", "end-1c"))
         maxintensity_par = int(bitstext.get("1.0", "end-1c"))
         print("Selected cell segmenter is " + cellseg_par)
 
@@ -115,7 +116,7 @@ def run_job():
     filesnotprocessed = []
     for apath in paths:
         if os.path.isfile(os.path.join(head, apath)):
-            subjobval = run_subjob(apath, dot_3d_cutoff_par, minarea_par, maxintensity_par)
+            subjobval = run_subjob(apath, dot_3d_cutoff_par, minareaPO_par, minareacell_par, maxintensity_par)
             if not subjobval:
                 filehead, filetail = os.path.split(apath)
                 filesnotprocessed.append(filetail)  # Add path to list of paths we couldn't process (for warning message)
@@ -138,7 +139,8 @@ def run_job():
         configvals = {"Path": path,
                       'ProcessDir': processdirvar.get(),
                       'PeroxSensitivity': dot_3d_cutoff_par,
-                      'MinPeroxArea': minarea_par,
+                      'MinPeroxArea': minareaPO_par,
+                      'MinCellArea': minareacell_par,
                       'MaxIntensity': maxintensity_par,
                       'CellSegmenter': cellseg_par,
                       'Version': version}
@@ -156,9 +158,10 @@ def run_job():
         app.deiconify()  # Un-hide the app so the user can configure a new job
 
 
-def run_subjob(path="", dot_3d_cutoff_par=0.0064, minarea_par=1, maxintensity_par=16383):
+def run_subjob(path="", dot_3d_cutoff_par=0.0064, minareaPO_par=1, minareacell_par=1, maxintensity_par=16383):
     print("Peroxisome segmentation sensitivity parameter set to ", dot_3d_cutoff_par)
-    print("Peroxisome minimum area in pixels set to ", minarea_par)
+    print("Peroxisome minimum area in pixels set to ", minareaPO_par)
+    print("Cell minimum area in pixels set to ", minareacell_par)
     print("Maximum possible intensity of image set to ", maxintensity_par)
 
     head, tail = os.path.split(path)
@@ -245,7 +248,7 @@ def run_subjob(path="", dot_3d_cutoff_par=0.0064, minarea_par=1, maxintensity_pa
                   output_path=maskdir,
                   fn=tail + "_peroxisomes_",
                   dot_3d_cutoff=dot_3d_cutoff_par,
-                  minarea=minarea_par,
+                  minareaPO=minareaPO_par,
                   maxintensity=maxintensity_par)
     print("Done.")
 
@@ -319,15 +322,18 @@ def run_subjob(path="", dot_3d_cutoff_par=0.0064, minarea_par=1, maxintensity_pa
     channels = [[0, 0]]
     masks, flows, styles, diams = model.eval(imgs, diameter=None, channels=channels)
 
+    cpmask = masks[0]
+    cpmask = remove_small_objects(cpmask, min_size=minareacell_par, connectivity=1, in_place=False)
+
     # Write out mask to file (copied from mrccn.convert_to_image.py)
-    cpmaskimage = Image.fromarray(masks[0])
+    cpmaskimage = Image.fromarray(cpmask)
     cpcellmaskfile = maskdir + os.path.splitext(tail)[0] + '.tif'
     cpmaskimage.save(cpcellmaskfile)
 
     print("Finished cell segmentation with CellPose.")
 
     # Use peroxisome and cell masks to quantify POs per cell and write out results
-    quantify_POs_per_cell.quantify_and_save(path, maskdir, dot_3d_cutoff_par, minarea_par,
+    quantify_POs_per_cell.quantify_and_save(path, maskdir, dot_3d_cutoff_par, minareaPO_par, minareacell_par,
                                             maxintensity_par, cellseg_par, version)
 
     return True
@@ -343,7 +349,7 @@ def Workflow_gja1(
         fn: Union[str, Path] = None,
         output_func=None,
         dot_3d_cutoff: float = 0.005,
-        minarea: float = 1,
+        minareaPO: float = 1,
         maxintensity: float = 16383,
 ):
     # intensity_norm_param = [1, 999]
@@ -393,12 +399,12 @@ def Workflow_gja1(
     # step 1: LOG 3d
     response = dot_3d(structure_img_smooth, log_sigma=dot_3d_sigma)
     bw = response > dot_3d_cutoff
-    bw = remove_small_objects(bw > 0, min_size=minarea, connectivity=1, in_place=False)
+    bw = remove_small_objects(bw > 0, min_size=minareaPO, connectivity=1, in_place=False)
 
     ###################
     # POST-PROCESSING
     ###################
-    seg = remove_small_objects(bw, min_size=minarea, connectivity=1, in_place=False)
+    seg = remove_small_objects(bw, min_size=minareaPO, connectivity=1, in_place=False)
 
     # output
     seg = seg > 0
@@ -431,9 +437,9 @@ app.title('p e r o x - p e r - c e l l')
 platform = platform.system()
 
 if platform == "Darwin":
-    app.geometry('735x325')  # Need some extra room on Mac
+    app.geometry('735x380')  # Need some extra room on Mac
 else:
-    app.geometry('660x325')
+    app.geometry('660x380')
 
 # Create a textfield for inputting the file location
 filetext = tk.Text(app, height=2, width=47)
@@ -450,9 +456,13 @@ run_button = ttk.Button(app, text='Run', command=run_job, width=10)
 senstext = tk.Text(app, height=1, width=7)
 senstext.insert('1.0', '0.0064')
 
-# Minimum pixel size for peroxisomes
-minpixtext = tk.Text(app, height=1, width=7)
-minpixtext.insert('1.0', '1')
+# Minimum number of pixels for peroxisomes
+minpixPOtext = tk.Text(app, height=1, width=7)
+minpixPOtext.insert('1.0', '1')
+
+# Minimum number of pixels for cells
+minpixcelltext = tk.Text(app, height=1, width=7)
+minpixcelltext.insert('1.0', '1')
 
 # Maximum signal intensity for peroxisome images
 bitstext = tk.Text(app, height=1, width=7)
@@ -489,17 +499,19 @@ ttk.Separator(app, orient='horizontal').grid(column=0, row=2, columnspan=4, stic
 Label(app, text="Peroxisome detection sensitivity (lower is more sensitive)").grid(column=1, row=3, pady=10, padx=2, sticky='e')
 senstext.grid(column=2, row=3, pady=10, padx=0)
 Label(app, text="Minimum pixel count for peroxisomes").grid(column=1, row=4, pady=10, padx=2, sticky='e')
-minpixtext.grid(column=2, row=4, pady=10, padx=0)
-Label(app, text="Maximum intensity value in peroxisome channel (2^bit_depth – 1)").grid(column=1, row=5, pady=10, padx=2, sticky='e')
-bitstext.grid(column=2, row=5, pady=10, padx=0)
-Label(app, text="Cell segmentation algorithm").grid(column=1, row=6, pady=10, padx=2, sticky='e')
+minpixPOtext.grid(column=2, row=4, pady=10, padx=0)
+Label(app, text="Minimum pixel count for cells").grid(column=1, row=5, pady=10, padx=2, sticky='e')
+minpixcelltext.grid(column=2, row=5, pady=10, padx=0)
+Label(app, text="Maximum intensity value in peroxisome channel (2^bit_depth – 1)").grid(column=1, row=6, pady=10, padx=2, sticky='e')
+bitstext.grid(column=2, row=6, pady=10, padx=0)
+Label(app, text="Cell segmentation algorithm").grid(column=1, row=7, pady=10, padx=2, sticky='e')
 
 cellsegoptionmenu = OptionMenu(app, cellsegclicked, *cellsegoptions)
 cellsegoptionmenu.config(width=10)
-cellsegoptionmenu.grid(column=2, row=6, pady=10, padx=2, sticky='e')
+cellsegoptionmenu.grid(column=2, row=7, pady=10, padx=2, sticky='e')
 
-ttk.Separator(app, orient='horizontal').grid(column=0, row=7, columnspan=4, sticky="ew", pady=3, padx=3)
-run_button.grid(column=0, row=8, columnspan=4, pady=15)
+ttk.Separator(app, orient='horizontal').grid(column=0, row=8, columnspan=4, sticky="ew", pady=3, padx=3)
+run_button.grid(column=0, row=9, columnspan=4, pady=15)
 
 # Make infinite loop for displaying app on the screen
 print("\nperox-per-cell GUI ready.")

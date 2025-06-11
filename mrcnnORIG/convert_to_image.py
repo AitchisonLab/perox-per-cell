@@ -4,6 +4,7 @@ from PIL import Image
 import skimage.transform
 import time
 import os
+from skimage.morphology import remove_small_objects
 
 '''Converts the compression rle files to images.
 
@@ -11,7 +12,7 @@ Input:
 rlefile: csv file containing compressed masks from the segmentation algorithm
 outputdirectory: directory to write images to
 preprocessed_image_list: csv file containing list of images and their heights and widths'''
-def convert_to_image(rlefile, outputdirectory, preprocessed_image_list,
+def convert_to_image(rlefile, outputdirectory, preprocessed_image_list, minareacells,
                      rescale=False, scale_factor=2, verbose=False):
 
     rle = csv.reader(open(rlefile), delimiter=',')
@@ -70,6 +71,8 @@ def convert_to_image(rlefile, outputdirectory, preprocessed_image_list,
         if rescale:
             image = skimage.transform.resize(image, output_shape=(height, width), order=0, preserve_range=True)
 
+        image = image.astype(int)
+        image = remove_small_objects(image, min_size=minareacells, connectivity=1, in_place=False)
         image = Image.fromarray(image)
         print("Saving to " + outputdirectory + f + ".tif")
         image.save(outputdirectory + f + ".tif")

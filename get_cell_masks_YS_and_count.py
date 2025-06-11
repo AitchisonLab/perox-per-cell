@@ -17,7 +17,6 @@ warnings.filterwarnings("ignore")
 
 configloc = sys.argv[1]  # Configuration file for job
 print("Working from configuration file at " + configloc)
-
 print("Using yeast_segmentation to segment cells...")
 
 # Read in job configuration file
@@ -28,6 +27,7 @@ selectedhead, selectedtail = os.path.split(path)
 processdir = int(configdata.get("ProcessDir"))  # Whether to process all other files in directory
 POdotcut = float(configdata.get("PeroxSensitivity"))  # Peroxisome segmentation sensitivity parameter
 POminarea = int(configdata.get("MinPeroxArea"))  # Minimum area for peroxisomes
+cellminarea = int(configdata.get("MinCellArea"))  # Minimum area for cells
 maxintensity = int(configdata.get("MaxIntensity"))  # Theoretical maximum intensity level of input images
 version = configdata.get("Version")  # Software version
 
@@ -80,14 +80,14 @@ def detect_cells(thepath):
 	# preprocessed_image_list: csv file containing list of images and their heights and widths'''
 
 	print('Saving masks...')
-	convert_to_image(predoutputfile, maskdir, imageinfooutputfile, rescale=False, scale_factor=2, verbose=False)
+	convert_to_image(predoutputfile, maskdir, imageinfooutputfile, cellminarea, rescale=False, scale_factor=2, verbose=False)
 	print('Done.')
 
 	# Count number of peroxisomes per cell using masks
 	fileid = tail  # The name of the original processed image without the full path location
 
 	# Function call to assign quantify POs per cell goes here
-	quantify_POs_per_cell.quantify_and_save(thepath, maskdir, POdotcut, POminarea, maxintensity, "YeastSpotter", version)
+	quantify_POs_per_cell.quantify_and_save(thepath, maskdir, POdotcut, POminarea, cellminarea, maxintensity, "YeastSpotter", version)
 
 
 for apath in paths:

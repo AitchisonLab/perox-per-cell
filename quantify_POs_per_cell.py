@@ -16,9 +16,10 @@ def set_column_widths(theworksheet, thedf, width):
 # maskdir: output directory for peroxisome and cell masks
 # POdotcut: Peroxisome segmentation sensitivity parameter
 # POminarea: Minimum area for peroxisomes
+# cellminarea: Minimum area for cells
 # maxintensity: Theoretical maximum intensity level of input images
 # version: Software version
-def quantify_and_save(sourceimagepath, maskdir, POdotcut, POminarea, maxintensity, cellsegmenter, version):
+def quantify_and_save(sourceimagepath, maskdir, POdotcut, POminarea, cellminarea, maxintensity, cellsegmenter, version):
 
     head, tail = os.path.split(sourceimagepath)
     fileid = tail
@@ -297,6 +298,9 @@ def quantify_and_save(sourceimagepath, maskdir, POdotcut, POminarea, maxintensit
 
     properties.append("POminarea")
     values.append(POminarea)
+
+    properties.append("cellminarea")
+    values.append(cellminarea)
 
     properties.append("maxintensity")
     values.append(maxintensity)
