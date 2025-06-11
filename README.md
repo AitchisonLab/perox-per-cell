@@ -50,6 +50,8 @@ Please keep all program files where they are in the downloaded repository. Other
     - The first sets the sensitivity of peroxisome detection (lower is more sensitive). Default is 0.0064.
     - The second sets the minimum size, in pixels, for a peroxisome to be counted. Default is 1.
     - The third should be set to one less than the maximum possible pixel intensity value for the input image. In other words, 2^(bit depth of input image) - 1. Default is 16383.
+    - The fourth sets the cell segmentation method to use. Default is YeastSpotter (validated on images of yeast). The alternative is CellPose (validated on images of various cell types).
+    - The fifth sets the minimum size, in pixels, for a segmented cell to be counted. Default is 1.
 5) Press Run 
 6) The GUI will close and messages output by the program will appear in the command prompt. You may see warning messages related to TensorFlow but they can be ignored. When the run finishes, the GUI will re-open and another run can be performed. In initial tests, the program takes less than 90 seconds to process one imaging file on a garden variety Windows desktop.
 
