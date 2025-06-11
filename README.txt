@@ -52,10 +52,13 @@ all files in the directory by checking the "Process all files in directory" chec
 
 4) If needed, edit the values for parameters in the GUI
 	- The first sets the sensitivity of peroxisome detection (lower is more sensitive). Default is 0.0064.
-	- The second sets the minimum size, in pixels, for a peroxisome to be counted. Default is 1.
+	- The second sets the minimum size, in pixels, for a segmented peroxisome to be counted. Default is 1.
 	- The third should be set to one less than the maximum possible pixel intensity value for the input image.
     	In other words, 2^(bit depth of input image) - 1. Default is 16383.
-		
+	- The fourth sets the cell segmentation method to use. Default is YeastSpotter (validated on images of
+	    yeast). The alternative is CellPose (validated on various cell types).
+	- The fifth sets the minimum size, in pixels, for a segmented cell to be counted. Default is 1.
+
 5) Press Run
 
 6) The GUI will close and messages output by the program will appear in the command prompt. When the run 
