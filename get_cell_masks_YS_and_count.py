@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # coding: utf-8
-# !!! NEEDS TO BE RUN FROM VIRTUALENV PYTHON_3_5 !!!
+# !!! NEEDS TO BE RUN FROM PYTHON_3_5_4 !!!
 import os
 import sys
 import json
 import warnings
 import gc
-import quantify_POs_per_cell
+import quantify_SFs_per_cell
 
 from mrcnnORIG.preprocess_images import preprocess_images
 from mrcnnORIG.my_inference import predict_images
@@ -25,8 +25,8 @@ path = configdata.get('Path')
 selectedhead, selectedtail = os.path.split(path)
 
 processdir = int(configdata.get("ProcessDir"))  # Whether to process all other files in directory
-POdotcut = float(configdata.get("PeroxSensitivity"))  # Peroxisome segmentation sensitivity parameter
-POminarea = int(configdata.get("MinPeroxArea"))  # Minimum area for peroxisomes
+SFdotcut = float(configdata.get("SubcellularFeatureSensitivity"))  # Subcellular feature segmentation sensitivity parameter
+SFminarea = int(configdata.get("MinSubcellularFeatureArea"))  # Minimum area for subcellular features
 cellminarea = int(configdata.get("MinCellArea"))  # Minimum area for cells
 maxintensity = int(configdata.get("MaxIntensity"))  # Theoretical maximum intensity level of input images
 version = configdata.get("Version")  # Software version
@@ -83,11 +83,11 @@ def detect_cells(thepath):
 	convert_to_image(predoutputfile, maskdir, imageinfooutputfile, cellminarea, rescale=False, scale_factor=2, verbose=False)
 	print('Done.')
 
-	# Count number of peroxisomes per cell using masks
+	# Count number of subcellular features per cell using masks
 	fileid = tail  # The name of the original processed image without the full path location
 
-	# Function call to assign quantify POs per cell goes here
-	quantify_POs_per_cell.quantify_and_save(thepath, maskdir, POdotcut, POminarea, cellminarea, maxintensity, "YeastSpotter", version)
+	# Function call to quantify subcellular features per cell goes here
+	quantify_SFs_per_cell.quantify_and_save(thepath, maskdir, SFdotcut, SFminarea, cellminarea, maxintensity, "YeastSpotter", version)
 
 
 for apath in paths:
@@ -95,4 +95,4 @@ for apath in paths:
 		detect_cells(apath)
 		gc.collect()
 
-print("Done segmenting cells and computing peroxisome metrics for all imaging files.")
+print("Done segmenting cells and computing subcellular feature metrics for all imaging files.")

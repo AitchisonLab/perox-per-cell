@@ -12,11 +12,14 @@ import json
 import platform
 
 from PIL import Image
-from PIL.TiffTags import TAGS 
+from PIL.TiffTags import TAGS
+from matplotlib import pyplot as plt
 from tifffile import imread, imwrite, TiffFile
 from typing import Union
 from pathlib import Path
-from skimage.morphology import remove_small_objects
+from skimage.morphology import remove_small_objects, remove_small_holes
+from scipy import ndimage
+
 from aicssegmentation.core.output_utils import (
     save_segmentation,
     generate_segmentation_contour
@@ -36,7 +39,7 @@ from tkinter import StringVar
 from cellpose import models, io
 from cellpose.io import imread as cpimread
 
-import quantify_POs_per_cell
+import quantify_SFs_per_cell
 
 
 try:
@@ -45,10 +48,10 @@ try:
 except:
     messagebox.showerror('Bioformats error', 'There was an issue loading the Java bridge and Bioformats.\n\n' +
                          'Please make sure Java is installed and the JAVA_HOME environment variable is set.\n\n' +
-                         'Details about these program prerequisites are available in the README at https://github.com/AitchisonLab/perox-per-cell')
+                         'Details about these program prerequisites are available in the README at https://github.com/AitchisonLab/feature-per-cell')
     sys.exit()
 
-version = "0.0.7"  # Software version
+version = "0.0.8"  # Software version
 
 batchpath = sys.argv[1]
 batchpath = os.path.join(batchpath, '')
@@ -76,7 +79,7 @@ def run_job():
     # Collect image analysis parameters for job
     try:
         dot_3d_cutoff_par = float(senstext.get())
-        minareaPO_par = int(minpixPOtext.get())
+        minareaSF_par = int(minpixSFtext.get())
         minareacell_par = int(minpixcelltext.get())
         maxintensity_par = int(bitstext.get())
         print("Selected cell segmenter is " + cellseg_par)
@@ -114,9 +117,10 @@ def run_job():
     # Iterate through the imaging files to process
     subjobval = True
     filesnotprocessed = []
+
     for apath in paths:
         if os.path.isfile(os.path.join(head, apath)):
-            subjobval = run_subjob(apath, dot_3d_cutoff_par, minareaPO_par, minareacell_par, maxintensity_par)
+            subjobval = run_subjob(apath, dot_3d_cutoff_par, minareaSF_par, minareacell_par, maxintensity_par)
             if not subjobval:
                 filehead, filetail = os.path.split(apath)
                 filesnotprocessed.append(filetail)  # Add path to list of paths we couldn't process (for warning message)
@@ -138,8 +142,8 @@ def run_job():
         # Write out configuration file, so it can be read by cell segmentation script
         configvals = {"Path": path,
                       'ProcessDir': processdirvar.get(),
-                      'PeroxSensitivity': dot_3d_cutoff_par,
-                      'MinPeroxArea': minareaPO_par,
+                      'SubcellularFeatureSensitivity': dot_3d_cutoff_par,
+                      'MinSubcellularFeatureArea': minareaSF_par,
                       'MinCellArea': minareacell_par,
                       'MaxIntensity': maxintensity_par,
                       'CellSegmenter': cellseg_par,
@@ -153,14 +157,14 @@ def run_job():
         app.destroy()  # Remove GUI
     else:
         print("Job finished.")
-        print("\nperox-per-cell GUI ready.")
+        print("\nfeature-per-cell GUI ready.")
         print("Please enter job configuration parameters and press \"Run\".")
         app.deiconify()  # Un-hide the app so the user can configure a new job
 
 
-def run_subjob(path="", dot_3d_cutoff_par=0.0064, minareaPO_par=1, minareacell_par=1, maxintensity_par=16383):
-    print("Peroxisome segmentation sensitivity parameter set to ", dot_3d_cutoff_par)
-    print("Peroxisome minimum area in pixels set to ", minareaPO_par)
+def run_subjob(path="", dot_3d_cutoff_par=0.0064, minareaSF_par=1, minareacell_par=1, maxintensity_par=16383):
+    print("Subcellular feature segmentation sensitivity set to ", dot_3d_cutoff_par)
+    print("Subcellular feature minimum area in pixels set to ", minareaSF_par)
     print("Cell minimum area in pixels set to ", minareacell_par)
     print("Maximum possible intensity of image set to ", maxintensity_par)
 
@@ -174,7 +178,6 @@ def run_subjob(path="", dot_3d_cutoff_par=0.0064, minareaPO_par=1, minareacell_p
         md = bioformats.get_omexml_metadata(path)
         md = bioformats.omexml.OMEXML(md)
         pixels = md.image(0).Pixels
-
         channel_count = pixels.SizeC
         stack_count = pixels.SizeZ
         timepoint_count = pixels.SizeT
@@ -199,66 +202,71 @@ def run_subjob(path="", dot_3d_cutoff_par=0.0064, minareaPO_par=1, minareacell_p
     print("Physical size of y: " + str(physsizey) + " " + physsizeyunit)
     print(str(pixarea) + " " + physsizexunit + "^2 per pixel")
 
-    struct_img_perox = np.empty([stack_count, sizey, sizex], np.uint16)  # ImageJ reads z,y,x
+    struct_img_subfeat = np.empty([stack_count, sizey, sizex], np.uint16)  # ImageJ reads z,y,x
     struct_img_cells = np.empty([stack_count, sizey, sizex], np.uint16)
 
     rdr = bioformats.ImageReader(path, perform_init=True)
 
-    # get peroxisome and cell images
+    # get subcellular feature and cell images
     for z in range(stack_count):
-        struct_img_perox[z, :, :] = rdr.read(z=z, t=0, c=0, rescale=False)  # c=0 for perox, c=1 for yeast
-        struct_img_cells[z, :, :] = rdr.read(z=z, t=0, c=1, rescale=False)  # c=0 for perox, c=1 for yeast
+        if timepoint_count == 2 and channel_count == 1:  # This conditional here only for processing Saleem project data. Can't seem to get Bioformats to correctly read in metadata even though Fiji works OK.
+            print("Using Saleem scheme")
+            struct_img_subfeat[z, :, :] = rdr.read(z=z, t=0, c=0, rescale=False)  # c=0 for subcellular feature, c=1 for yeast
+            struct_img_cells[z, :, :] = rdr.read(z=z, t=1, c=0, rescale=False)  # c=0 for subcellular feature, c=1 for yeast
+        else:
+            struct_img_subfeat[z, :, :] = rdr.read(z=z, t=0, c=0, rescale=False)  # c=0 for subcellular feature, c=1 for yeast
+            struct_img_cells[z, :, :] = rdr.read(z=z, t=0, c=1, rescale=False)  # c=0 for subcellular feature, c=1 for yeast
 
-    # Create maximum intensity Z-projection for peroxisome channel
-    zperox = np.max(struct_img_perox, axis=0)
+    # Create maximum intensity Z-projection for subcellular feature channel
+    zsubfeat = np.max(struct_img_subfeat, axis=0)
 
     # Create average intensity Z-projection for cell channel
     zcells = np.mean(struct_img_cells, axis=0)
 
     # Save out Z projections
-    zprojdirperox = head + "/" + tail + "_Zprojections/perox/"
+    zprojdirsubfeat = head + "/" + tail + "_Zprojections/subcellularfeatures/"
     zprojdircells = head + "/" + tail + "_Zprojections/cells/"
 
-    if not os.path.exists(zprojdirperox):
-        os.makedirs(zprojdirperox)
+    if not os.path.exists(zprojdirsubfeat):
+        os.makedirs(zprojdirsubfeat)
     if not os.path.exists(zprojdircells):
         os.makedirs(zprojdircells)
 
-    peroxzpath = zprojdirperox + tail + "_peroxisome_Zprojection.tiff"
+    subfeatzpath = zprojdirsubfeat + tail + "_subcellularfeatures_Zprojection.tiff"
     cellszpath = zprojdircells + tail + "_cells_Zprojection.tiff"
 
-    zperox_img = Image.fromarray(zperox)
+    zsubfeat_img = Image.fromarray(zsubfeat)
     zcells_img = Image.fromarray(zcells)
 
-    zperox_img.save(peroxzpath)
+    zsubfeat_img.save(subfeatzpath)
     zcells_img.save(cellszpath)
 
-    # Use Allen Institute Segmenter to find peroxisomes first make output directory, if needed
+    # Use Allen Institute Segmenter to find subcellular features first make output directory, if needed
     maskdir = head + "/" + tail + "_ZprojectionMasks/"
     if not os.path.exists(maskdir):
         os.makedirs(maskdir)
 
-    # Put 2D maximum intensity projection for peroxisomes in a 3D array with one z-index
-    temp_struct_img_perox = np.empty([1, sizey, sizex], np.uint16)
-    temp_struct_img_perox[0, :, :] = zperox
+    # Put 2D maximum intensity projection for subcellular features in a 3D array with one z-index
+    temp_struct_img_subfeat = np.empty([1, sizey, sizex], np.uint16)
+    temp_struct_img_subfeat[0, :, :] = zsubfeat
 
     # Run Allen Institute Segmenter
-    print("Segmenting peroxisomes...")
-    Workflow_gja1(temp_struct_img_perox,
+    print("Segmenting subcellular features...")
+    Workflow_gja1(temp_struct_img_subfeat,
                   output_path=maskdir,
-                  fn=tail + "_peroxisomes_",
+                  fn=tail + "_subcellularfeatures_",
                   dot_3d_cutoff=dot_3d_cutoff_par,
-                  minareaPO=minareaPO_par,
+                  minareaSF=minareaSF_par,
                   maxintensity=maxintensity_par)
     print("Done.")
 
-    # Load peroxisome mask to detect distinct objects
-    peroxsegpath = maskdir + tail + "_peroxisomes__struct_segmentation.tiff"
+    # Load subcellular feature mask to detect distinct objects
+    subfeatsegpath = maskdir + tail + "_subcellularfeatures__struct_segmentation.tiff"
 
-    print("Identifying distinct peroxisomes in mask...")
+    print("Identifying distinct subcellular features in mask...")
     # From https://stackoverflow.com/questions/59150197/how-to-identify-distinct-objects-in-image-in-opencv-python
     # Load the image in grayscale
-    input_image = cv2.imread(peroxsegpath, cv2.IMREAD_GRAYSCALE)
+    input_image = cv2.imread(subfeatsegpath, cv2.IMREAD_GRAYSCALE)
 
     # Threshold the image to make sure that is binary
     thresh_type = cv2.THRESH_BINARY + cv2.THRESH_OTSU
@@ -272,21 +280,21 @@ def run_subjob(path="", dot_3d_cutoff_par=0.0064, minareaPO_par=1, minareacell_p
     colors[0] = [0, 0, 0]  # for cosmetic reasons we want the background black
     false_colors = colors[labels]
 
-    labelperoxpath = maskdir + tail + "_peroxisomes_labeled_objects.tiff"
+    labelsubfeatpath = maskdir + tail + "_subcellularfeatures_labeled_objects.tiff"
 
-    # Save labeled peroxisome image and store metadata about physical size of pixels in
+    # Save labeled subcellular feature image and store metadata about physical size of pixels in
     # ImageDescription tag which we will use later to compute cell area.
     unitalt = unidecode.unidecode(physsizexunit + "*" + physsizeyunit)
 
-    imwrite(labelperoxpath, labels, description=str(pixarea) + " " + unitalt)
+    imwrite(labelsubfeatpath, labels, description=str(pixarea) + " " + unitalt)
 
     print("Done.")
-    print("Peroxisome intensity projections written to " + zprojdirperox)
+    print("Subcellular feature intensity projections written to " + zprojdirsubfeat)
     print("Cell intensity projections written to " + zprojdircells)
-    print("Peroxisome masks written to " + os.path.abspath(maskdir))
+    print("Subcellular feature masks written to " + os.path.abspath(maskdir))
 
     # If using YeastSpotter, don't run segmenter. If using CellPose, run cell segmentation as well as
-    # PO per cell quantification here
+    # Subcellular feature per cell quantification here
     if cellseg_par == cellsegoptions[0]:
         return True
 
@@ -332,8 +340,8 @@ def run_subjob(path="", dot_3d_cutoff_par=0.0064, minareaPO_par=1, minareacell_p
 
     print("Finished cell segmentation with CellPose.")
 
-    # Use peroxisome and cell masks to quantify POs per cell and write out results
-    quantify_POs_per_cell.quantify_and_save(path, maskdir, dot_3d_cutoff_par, minareaPO_par, minareacell_par,
+    # Use subcellular feature and cell masks to quantify features per cell and write out results
+    quantify_SFs_per_cell.quantify_and_save(path, maskdir, dot_3d_cutoff_par, minareaSF_par, minareacell_par,
                                             maxintensity_par, cellseg_par, version)
 
     return True
@@ -349,14 +357,19 @@ def Workflow_gja1(
         fn: Union[str, Path] = None,
         output_func=None,
         dot_3d_cutoff: float = 0.005,
-        minareaPO: float = 1,
+        minareaSF: float = 1,
         maxintensity: float = 16383,
 ):
     # intensity_norm_param = [1, 999]
     gaussian_smoothing_sigma = 1
     gaussian_smoothing_truncate_range = 3.0
-    dot_3d_sigma = 1
-    # dot_3d_cutoff = 0.005  # 0.025 # originally 0.031 but 0.01 found to be more sensitive for perox detection
+    dot_3d_sigma = 1.2
+
+    # log_sigma: float the size of the filter, which can be set based on the estimated radius
+    # of your target dots. For example, if visually the diameter of the dots is usually 3
+    #  ~4 pixels, then you may want to set this as 1 or something near 1 (like 1.25).
+
+    # dot_3d_cutoff = 0.005  # 0.025 # originally 0.031 but 0.01 found to be more sensitive for subcellular feature detection
 
     out_img_list = []
     out_name_list = []
@@ -364,8 +377,8 @@ def Workflow_gja1(
     ###################
     # PRE_PROCESSING
     ###################
-    # intenisty normalization (min/max) - This is performed in the original gja1 workflow,
-    # but results in many false positive peroxisome detections for images without high-intensity
+    # Intensity normalization (min/max) - This is performed in the original gja1 workflow,
+    # but results in many false positive puncta detections for images without high-intensity
     # puncta. Instead of min/max normalization, we normalize to the maximum possible value
     # in the image.
     # struct_img = intensity_normalization(struct_img, scaling_param=intensity_norm_param)
@@ -399,23 +412,23 @@ def Workflow_gja1(
     # step 1: LOG 3d
     response = dot_3d(structure_img_smooth, log_sigma=dot_3d_sigma)
     bw = response > dot_3d_cutoff
-    bw = remove_small_objects(bw > 0, min_size=minareaPO, connectivity=1, in_place=False)
+    bw = remove_small_objects(bw > 0, min_size=minareaSF, connectivity=1, in_place=False)
 
     ###################
     # POST-PROCESSING
     ###################
-    seg = remove_small_objects(bw, min_size=minareaPO, connectivity=1, in_place=False)
+    segnosmall = remove_small_objects(bw, min_size=minareaSF, connectivity=1, in_place=False)
+    segnosmall = remove_small_holes(segnosmall, area_threshold=50)  # SHould probably make dot_3d_sigma and area_threshold adjustable
 
-    # output
-    seg = seg > 0
+    segnosmall[segnosmall > 0] = 1
+    seg = (segnosmall * 255)
     seg = seg.astype(np.uint8)
-    seg[seg > 0] = 255
 
     out_img_list.append(seg.copy())
     out_name_list.append("bw_final")
 
     if output_type == "default":
-        # the default final output, simply save it to the output path
+        # the default final output, save it to the output path
         save_segmentation(seg, False, Path(output_path), fn)
     elif output_type == "customize":
         # the hook for passing in a customized output function
@@ -432,14 +445,14 @@ def Workflow_gja1(
 
 # Create the GUI
 app = tk.Tk()
-app.title('p e r o x - p e r - c e l l')
+app.title('f e a t u r e - p e r - c e l l')
 
 platform = platform.system()
 
 if platform == "Darwin":
-    app.geometry('735x380')  # Need some extra room on Mac
+    app.geometry('775x380')  # Need some extra room on Mac
 else:
-    app.geometry('660x380')
+    app.geometry('700x380')
 
 # Create a textfield for inputting the file location
 filetext = tk.Text(app, height=2, width=47)
@@ -452,22 +465,22 @@ processdirbutton = tk.Checkbutton(app, text="Process all files in directory", va
 open_button = ttk.Button(app, text='Select', command=open_text_file)
 run_button = ttk.Button(app, text='Run', command=run_job, width=10)
 
-# Peroxisome detection sensitivity
+# Subcellular feature detection sensitivity
 senstextvar = tk.StringVar()
 senstextvar.set("0.0064")
 senstext = tk.Entry(app, textvariable=senstextvar, justify="right")  #, height=1, width=7)
 
-# Minimum number of pixels for peroxisomes
-minpixPOtextvar = tk.StringVar()
-minpixPOtextvar.set("1")
-minpixPOtext = tk.Entry(app, textvariable=minpixPOtextvar, justify="right")
+# Minimum number of pixels for subcellular features
+minpixSFtextvar = tk.StringVar()
+minpixSFtextvar.set("1")
+minpixSFtext = tk.Entry(app, textvariable=minpixSFtextvar, justify="right")
 
 # Minimum number of pixels for cells
 minpixcelltextvar = tk.StringVar()
 minpixcelltextvar.set("1")
 minpixcelltext = tk.Entry(app, textvariable=minpixcelltextvar, justify="right")
 
-# Maximum signal intensity for peroxisome images
+# Maximum signal intensity for subcellular feature images
 bitstextvar = tk.StringVar()
 bitstextvar.set("16383")
 bitstext = tk.Entry(app, textvariable=bitstextvar, justify="right")
@@ -500,11 +513,11 @@ open_button.grid(column=3, row=0, sticky='nsew', padx=5, pady=10)
 processdirbutton.grid(column=1, row=1, pady=0, sticky="w")
 ttk.Separator(app, orient='horizontal').grid(column=0, row=2, columnspan=4, sticky='ew', pady=3, padx=3)
 
-Label(app, text="Peroxisome detection sensitivity (lower is more sensitive)").grid(column=1, row=3, pady=10, padx=2, sticky='e')
+Label(app, text="Subcellular feature detection sensitivity (lower is more sensitive)").grid(column=1, row=3, pady=10, padx=2, sticky='e')
 senstext.grid(column=2, row=3, pady=10, padx=0)
-Label(app, text="Minimum pixel count for peroxisomes").grid(column=1, row=4, pady=10, padx=2, sticky='e')
-minpixPOtext.grid(column=2, row=4, pady=10, padx=0)
-Label(app, text="Maximum intensity value in peroxisome channel (2^bit_depth – 1)").grid(column=1, row=5, pady=10, padx=2, sticky='e')
+Label(app, text="Minimum pixel count for subcellular features").grid(column=1, row=4, pady=10, padx=2, sticky='e')
+minpixSFtext.grid(column=2, row=4, pady=10, padx=0)
+Label(app, text="Maximum intensity value in subcellular feature channel (2^bit_depth – 1)").grid(column=1, row=5, pady=10, padx=2, sticky='e')
 bitstext.grid(column=2, row=5, pady=10, padx=0)
 
 Label(app, text="Cell segmentation algorithm").grid(column=1, row=6, pady=10, padx=2, sticky='e')
@@ -519,7 +532,7 @@ ttk.Separator(app, orient='horizontal').grid(column=0, row=8, columnspan=4, stic
 run_button.grid(column=0, row=9, columnspan=4, pady=15)
 
 # Make infinite loop for displaying app on the screen
-print("\nperox-per-cell GUI ready.")
+print("\nfeature-per-cell GUI ready.")
 print("Please enter job configuration parameters and press \"Run\".")
 app.mainloop()
 
