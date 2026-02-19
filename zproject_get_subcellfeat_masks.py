@@ -1,10 +1,17 @@
 #!/usr/bin/env python
 # coding: utf-8
 import sys
+
+# Manually inject the module into the system cache so xsdata finds it
+try:
+    import xsdata_pydantic_basemodel.hooks as pydantic_hooks
+    sys.modules['xsdata_pydantic_basemodel.hooks'] = pydantic_hooks
+except ImportError:
+    pass
+
 import numpy as np
 import os
 import traceback
-
 import cv2
 import unidecode
 import tkinter as tk
@@ -363,7 +370,7 @@ def Workflow_gja1(
     # intensity_norm_param = [1, 999]
     gaussian_smoothing_sigma = 1
     gaussian_smoothing_truncate_range = 3.0
-    dot_3d_sigma = 1.2
+    dot_3d_sigma = 1
 
     # log_sigma: float the size of the filter, which can be set based on the estimated radius
     # of your target dots. For example, if visually the diameter of the dots is usually 3

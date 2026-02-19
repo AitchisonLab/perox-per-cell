@@ -3,6 +3,14 @@
 # !!! NEEDS TO BE RUN FROM PYTHON_3_5_4 !!!
 import os
 import sys
+
+# Manually inject the module into the system cache so xsdata finds it
+try:
+    import xsdata_pydantic_basemodel.hooks as pydantic_hooks
+    sys.modules['xsdata_pydantic_basemodel.hooks'] = pydantic_hooks
+except ImportError:
+    pass
+
 import json
 import warnings
 import gc
